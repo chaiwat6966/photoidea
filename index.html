@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-TF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idea Photo รับถ่ายภาพ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script> <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f0f2f5; 
+        }
+        .k-minimal-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .k-minimal-button {
+            background-color: #A7D7C5; 
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .k-minimal-button:hover {
+            background-color: #8dbfad; 
+        }
+        .k-minimal-input, .k-minimal-select {
+            border: 1px solid #D1D5DB; 
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+        .k-minimal-input:focus, .k-minimal-select:focus {
+            border-color: #A7D7C5; 
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(167, 215, 197, 0.5);
+        }
+        .icon-sm { width: 20px; height: 20px; display: inline-block; vertical-align: middle; margin-right: 8px; }
+        .icon-md { width: 24px; height: 24px; display: inline-block; vertical-align: middle; } 
+        .footer-icon { width: 24px; height: 24px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+        .nav-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .nav-button.active {
+            background-color: #A7D7C5;
+            color: white;
+        }
+        .nav-button:not(.active):hover {
+            background-color: #e9e9e9;
+        }
+        .table-header { background-color: #E5E7EB; font-weight: 500; }
+        .status-red { background-color: #FECACA; color: #991B1B; padding: 4px 8px; border-radius: 6px; font-size: 0.875rem; display:inline-block; }
+        .status-yellow { background-color: #FEF08A; color: #A16207; padding: 4px 8px; border-radius: 6px; font-size: 0.875rem; display:inline-block; }
+        .status-green { background-color: #BBF7D0; color: #15803D; padding: 4px 8px; border-radius: 6px; font-size: 0.875rem; display:inline-block; }
+        
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); display: flex;
+            align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal.active { opacity: 1; visibility: visible; }
+        
+        .modal-content { 
+            background-color: white; 
+            border-radius: 12px; 
+            width: 90%; max-width: 600px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .modal-content-lg { 
+            background-color: white; 
+            border-radius: 12px; 
+            width: 90%; max-width: 800px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .modal-header-custom {
+            background-image: linear-gradient(to right, #A4D0A4, #A0D2DB);
+            color: white;
+        }
+
+        .modal-content::-webkit-scrollbar, .modal-content-lg::-webkit-scrollbar { width: 8px; }
+        .modal-content::-webkit-scrollbar-track, .modal-content-lg::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .modal-content::-webkit-scrollbar-thumb, .modal-content-lg::-webkit-scrollbar-thumb { background: #A7D7C5; border-radius: 10px; }
+        .modal-content::-webkit-scrollbar-thumb:hover, .modal-content-lg::-webkit-scrollbar-thumb:hover { background: #8dbfad; }
+        
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendar-header { text-align: center; font-weight: bold; padding: 10px; background-color: #E5E7EB; border-radius: 6px; }
+        .calendar-day {
+            padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px;
+            min-height: 80px; background-color: white; position: relative;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
+        }
+        .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; }
+        .calendar-day-number { font-size: 0.875rem; font-weight: bold; margin-bottom: 4px; }
+        .calendar-event {
+            font-size: 0.75rem; padding: 2px 4px; margin-top: 2px;
+            background-color: #A7D7C5; color: white; border-radius: 4px;
+            cursor: pointer; width: 100%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .dashboard-metric-card {
+            background-color: #E0F2F7; 
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            margin-bottom:10px;
+        }
+        .dashboard-metric-card h4 { font-weight: 600; color: #00796B; margin-bottom: 8px; }
+        .dashboard-metric-card p { font-size: 0.9rem; color: #37474F; margin-bottom: 4px; }
+
+        .chart-container {
+            width: 100%;
+            max-width: 400px; /* Adjust as needed */
+            height: 300px; /* Adjust as needed */
+            margin: 10px auto;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .chart-container svg {
+            display: block;
+            margin: auto;
+        }
+        .chart-title {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #4A5568; /* gray-700 */
+            margin-bottom: 10px;
+        }
+        .tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 6px 10px;
+            font: 12px sans-serif;
+            background: lightsteelblue;
+            border: 0px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+        }
+    </style>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-md py-4">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex flex-col items-center md:items-start mb-4 md:mb-0">
+                <img src="https://img2.pic.in.th/pic/292496243_201571512196455_2042800695521020042_n.md.png" alt="Idea Photo Logo" style="width: 150px;" class="mb-2">
+                <h1 class="text-2xl font-semibold text-gray-700">Idea Photo รับถ่ายภาพ</h1>
+                <p class="text-sm text-gray-500">by ครูชัย</p>
+            </div>
+            <nav class="flex space-x-2">
+                <button id="navHome" class="nav-button active">หน้าหลัก</button>
+                <button id="navAllBookings" class="nav-button">ตารางงานทั้งหมด</button>
+                <button id="navAdminLogin" class="nav-button">Admin</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+
+        <div id="homePage">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <section id="bookingFormSection" class="k-minimal-card">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                        <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                        จองคิวถ่ายภาพ
+                    </h2>
+                    <form id="bookingForm" class="space-y-4">
+                        <div>
+                            <label for="typeOfWork" class="block text-sm font-medium text-gray-600 mb-1">ประเภทงาน</label>
+                            <select id="typeOfWork" name="typeOfWork" class="k-minimal-select" required>
+                                <option value="โปรไฟล์นักเรียน | portfolio">โปรไฟล์นักเรียน | portfolio</option>
+                                <option value="โปรไฟล์นักศึกษา">โปรไฟล์นักศึกษา</option>
+                                <option value="โปรไฟล์ทั่วไป">โปรไฟล์ทั่วไป</option>
+                                <option value="wedding | prewedding">wedding | prewedding</option>
+                                <option value="รับปริญญา | นอกรอบรับปริญญา">รับปริญญา | นอกรอบรับปริญญา</option>
+                                <option value="งาน Event">งาน Event</option>
+                                <option value="งานขาว-ดำ">งานขาว-ดำ</option>
+                                <option value="อื่นๆ">อื่นๆ</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-600 mb-1">สถานที่ถ่าย</label>
+                            <input type="text" id="location" name="location" class="k-minimal-input" required>
+                        </div>
+                        <div>
+                            <label for="numPeople" class="block text-sm font-medium text-gray-600 mb-1">จำนวนคน (ถ้ามี)</label>
+                            <input type="number" id="numPeople" name="numPeople" class="k-minimal-input" min="1">
+                        </div>
+                        <div>
+                            <label for="startDateTime" class="block text-sm font-medium text-gray-600 mb-1">วันที่และเวลาเริ่มต้น</label>
+                            <input type="datetime-local" id="startDateTime" name="startDateTime" class="k-minimal-input" required>
+                        </div>
+                        <div>
+                            <label for="endDateTime" class="block text-sm font-medium text-gray-600 mb-1">วันที่และเวลาสิ้นสุด</label>
+                            <input type="datetime-local" id="endDateTime" name="endDateTime" class="k-minimal-input" required>
+                        </div>
+                        <div>
+                            <label for="price" class="block text-sm font-medium text-gray-600 mb-1">ราคา</label>
+                            <input type="number" id="price" name="price" class="k-minimal-input" min="0" required>
+                        </div>
+                        <div>
+                            <label for="deposit" class="block text-sm font-medium text-gray-600 mb-1">มัดจำ</label>
+                            <input type="number" id="deposit" name="deposit" class="k-minimal-input" min="0" required>
+                        </div>
+                        <div>
+                            <label for="clientName" class="block text-sm font-medium text-gray-600 mb-1">ชื่อลูกค้าที่ติดต่อ</label>
+                            <input type="text" id="clientName" name="clientName" class="k-minimal-input" required>
+                        </div>
+                        <div>
+                            <label for="contactMethod" class="block text-sm font-medium text-gray-600 mb-1">ช่องทางติดต่อ</label>
+                            <select id="contactMethod" name="contactMethod" class="k-minimal-select">
+                                <option value="Facebook">Facebook</option>
+                                <option value="TikTok">TikTok</option>
+                                <option value="Line">Line</option>
+                                <option value="IG">IG</option>
+                                <option value="Tel.">Tel.</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="contactDetail" class="block text-sm font-medium text-gray-600 mb-1">รายละเอียดการติดต่อ</label>
+                            <input type="text" id="contactDetail" name="contactDetail" class="k-minimal-input" placeholder="เช่น ID Line, Profile URL, เบอร์โทร" required>
+                        </div>
+                        <input type="hidden" id="bookingId" name="bookingId"> <button type="submit" class="k-minimal-button w-full">
+                            <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 16.17l7.59-7.59L19 10l-9 9z"></path></svg>
+                            บันทึกการจอง
+                        </button>
+                    </form>
+                </section>
+
+                <section id="upcomingEventsSection" class="k-minimal-card">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                        <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+                        คิวงานที่กำลังจะมาถึง (20 คิวล่าสุด)
+                    </h2>
+                    <div id="upcomingEventsList" class="space-y-3 max-h-96 overflow-y-auto">
+                        <p class="text-gray-500">กำลังโหลดข้อมูลคิวงาน...</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div id="allBookingsPage" class="hidden">
+            <section class="k-minimal-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                    <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="m21 16-4-4-4 4"></path><path d="M17 22v-6"></path></svg>
+                    ตารางงานทั้งหมด
+                </h2>
+                <div class="flex justify-between items-center mb-4">
+                    <button id="prevMonthBtn" class="k-minimal-button text-sm">เดือนก่อนหน้า</button>
+                    <h3 id="calendarMonthYear" class="text-lg font-semibold"></h3>
+                    <button id="nextMonthBtn" class="k-minimal-button text-sm">เดือนถัดไป</button>
+                </div>
+                <div id="calendarView" class="calendar">
+                </div>
+                <div id="calendarMonthlySummary" class="text-center mt-4 text-gray-700 font-semibold">
+                </div>
+                <div id="allBookingsList" class="mt-6 space-y-3 hidden">
+                </div>
+            </section>
+        </div>
+
+        <div id="adminLoginPage" class="hidden">
+            <section class="k-minimal-card max-w-md mx-auto">
+                <h2 class="text-xl font-semibold mb-6 text-center text-gray-700">Admin Login</h2>
+                <form id="adminLoginForm" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-600 mb-1">Username</label>
+                        <input type="text" id="username" name="username" class="k-minimal-input" required value="admin">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-600 mb-1">Password</label>
+                        <input type="password" id="password" name="password" class="k-minimal-input" required value="434240129">
+                    </div>
+                    <button type="submit" class="k-minimal-button w-full">
+                        <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <div id="adminPanelPage" class="hidden">
+            <section class="k-minimal-card">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 12h9.75m-9.75 6h9.75M3.75 6H7.5m3 12h.008v.008H10.5v-.008zm0-6h.008v.008H10.5v-.008zm0-6h.008v.008H10.5V6z" />
+                        </svg>
+                        Admin Panel
+                    </h2>
+                    <button id="adminLogoutBtn" class="k-minimal-button bg-red-500 hover:bg-red-600">
+                        <svg class="icon-sm" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+                        ออกจากระบบ
+                    </button>
+                </div>
+
+                <h3 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    ภาพรวม Dashboard
+                </h3>
+                
+                <div id="summaryRevenueClickable" class="p-4 bg-blue-100 rounded-lg shadow mb-6 cursor-pointer hover:bg-blue-200 transition">
+                    <h3 class="font-semibold text-blue-700 mb-2 text-lg flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-blue-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                        </svg>
+                        สรุปรายได้รวม (คลิกเพื่อดูรายละเอียด)
+                    </h3>
+                    <div id="summaryRevenueOverall">
+                    </div>
+                </div>
+
+                <div class="p-4 bg-yellow-100 rounded-lg shadow mb-6">
+                    <h3 class="font-semibold text-yellow-700 mb-2 text-lg flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-yellow-500">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        สรุปสถานะงานโดยรวม
+                    </h3>
+                    <div id="summaryJobStatusOverall">
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+                    </svg>
+                    สรุปจำนวนงานตามประเภท
+                </h3>
+                <div id="jobTypeDashboardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                </div>
+
+                <h3 class="text-lg font-semibold my-6 text-gray-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-1.5m-6-3.75h.008v.008H9v-.008zm0 0H6.75m3 3.75h.008v.008H9v-.008zm0 0H6.75m3 3.75h.008v.008H9v-.008zm0 0H6.75m3 3.75h.008v.008H9v-.008zm0 0H6.75m0 0H3.75m0 0h3.75m0 0h3.75m0 0h3.75M3.75 16.5v2.25A2.25 2.25 0 006 21h12a2.25 2.25 0 002.25-2.25V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    กราฟสรุปข้อมูล
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="k-minimal-card">
+                        <h4 class="chart-title">กราฟวงกลมสรุปรายได้ตามประเภทงาน</h4>
+                        <div id="revenuePieChartContainer" class="chart-container"></div>
+                    </div>
+                    <div class="k-minimal-card">
+                        <h4 class="chart-title">กราฟโดนัทจำนวนนักเรียนแยกตามโรงเรียน (จากโปรไฟล์นักเรียน)</h4>
+                        <div id="studentDonutChartContainer" class="chart-container"></div>
+                    </div>
+                </div>
+                
+                <hr class="my-6">
+
+                <h3 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                    </svg>
+                    รายการคิวงานทั้งหมด (Admin)
+                </h3>
+                 <div class="mb-4 flex space-x-2">
+                    <label for="sortOrderAdmin" class="self-center">เรียงตาม:</label>
+                    <select id="sortOrderAdmin" class="k-minimal-select w-auto">
+                        <option value="startDateTimeAsc">วันที่เริ่มงาน (เก่าไปใหม่)</option>
+                        <option value="startDateTimeDesc">วันที่เริ่มงาน (ใหม่ไปเก่า)</option>
+                        <option value="bookingDateDesc">วันที่จอง (ใหม่ไปเก่า)</option>
+                    </select>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                        <thead class="table-header">
+                            <tr>
+                                <th class="p-3 text-left">ประเภทงาน</th>
+                                <th class="p-3 text-left">ลูกค้า</th>
+                                <th class="p-3 text-left">วันที่เริ่ม</th>
+                                <th class="p-3 text-left">ราคา</th>
+                                <th class="p-3 text-left">สถานะงาน</th>
+                                <th class="p-3 text-left">สถานะชำระเงิน</th>
+                                <th class="p-3 text-left">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminBookingList">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="bg-gray-700 text-white text-center p-6 mt-8">
+        <p class="mb-2">&copy; 2025 Idea Photo รับถ่ายภาพ</p>
+        <div class="flex flex-wrap justify-center items-center space-x-4">
+            <a href="https://www.facebook.com/ideaphoto.photoidea" target="_blank" class="hover:opacity-75 flex items-center my-1">
+                <svg class="footer-icon text-blue-500" viewBox="0 0 24 24" fill="currentColor"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
+                FB
+            </a>
+            <span class="hidden md:inline">|</span>
+            <a href="https://www.instagram.com/ideaphoto.photoidea" target="_blank" class="hover:opacity-75 flex items-center my-1">
+                <svg class="footer-icon text-pink-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                IG
+            </a>
+            <span class="hidden md:inline">|</span>
+            <a href="https://m.me/ideaphoto.photoidea" target="_blank" class="hover:opacity-75 flex items-center my-1">
+                <svg class="footer-icon text-blue-600" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.499 1.793 6.601 4.596 8.55L3.889 24l5.06-2.808c.984.284 2.02.439 3.051.439 6.627 0 12-4.975 12-11.111C24 4.975 18.627 0 12 0zm1.14 15.222l-2.09-2.093-5.076 2.076L11.728 9l2.09 2.093 5.076-2.076-5.754 6.205z"/></svg>
+                Chat
+            </a>
+            <span class="hidden md:inline">|</span>
+            <a href="https://line.me/ti/p/Wk8YRfuCyu" target="_blank" class="hover:opacity-75 flex items-center my-1">
+                <svg class="footer-icon text-green-500" viewBox="0 0 24 24" fill="currentColor"><path d="M20.583 2.834H3.417C2.034 2.834.917 3.95.917 5.333v11.334c0 1.383 1.117 2.5 2.5 2.5h17.166c1.383 0 2.5-1.117 2.5-2.5V5.333c0-1.383-1.117-2.5-2.5-2.5zM8.042 15.5H5.708V9.042h2.334V15.5zm4.5-6.458h-2.375V7.5h2.375v1.542zm0 2.334h-2.375v1.541h2.375v1.542zm0 2.333h-2.375v1.542h2.375V15.5zm4.583-2.333h-2.375V9.042h2.375V15.5zM19.25 15.5h-2.375V9.042h2.375V15.5z"/></svg>
+                Line
+            </a>
+            <span class="hidden md:inline">|</span>
+            <a href="https://www.tiktok.com/@idea..photo?_t=8iMkLwKa7us&_r=1" target="_blank" class="hover:opacity-75 flex items-center my-1">
+                <svg class="footer-icon text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-2.17.04-4.36-.6-6.08-1.96-1.15-.9-1.9-2.07-2.32-3.39-.23-.7-.31-1.4-.4-2.13l.01-.01h3.9c.01.63.11 1.25.32 1.84.52 1.53 2.01 2.54 3.56 2.52.6-.01 1.18-.13 1.72-.38 1.03-.49 1.67-1.47 1.73-2.59.02-.99-.01-1.99-.01-2.98h-2.73v-4.03h2.73c0-2.12 0-4.23-.01-6.35-.01-.88-.29-1.74-.81-2.44-.62-.85-1.5-1.43-2.5-1.72-.02-.01-.03-.01-.05-.02v-4.02c.91.13 1.8.46 2.62.93.56.31 1.07.72 1.52 1.22.01.01.01.01.02.01.02-1.09.01-2.19-.02-3.28z"/></svg>
+                TikTok
+            </a>
+            <span class="hidden md:inline">|</span>
+            <span class="flex items-center my-1">
+                <svg class="footer-icon text-gray-400" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                Tel: 086-735-9330
+            </span>
+        </div>
+    </footer>
+
+    <div id="bookingDetailModal" class="modal">
+        <div class="modal-content">
+            <div id="modalHeaderRow" class="modal-header-custom flex justify-between items-center p-4 rounded-t-lg">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-md mr-3 text-white">
+                      <path d="M4 4h3l2-2h6l2 2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm10 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm-0-8a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
+                      <circle cx="18.5" cy="7.5" r="1.5"/>
+                    </svg>
+                    <h3 id="modalTitle" class="text-xl font-semibold text-white"></h3>
+                </div>
+                <button id="closeModalBtnStandard" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            <div id="modalBodyStandard" class="space-y-3 text-sm p-4">
+            </div>
+            <hr class="border-dashed border-gray-300 mx-4 my-2">
+            <div class="px-4 pb-4 space-y-1 text-xs">
+                <p class="font-semibold text-gray-700">หมายเหตุ:</p>
+                <ol class="list-decimal list-inside text-gray-600">
+                    <li>ส่งงานทาง Google Drive หรือ Line ภายใน 1-20 วัน</li>
+                    <li>ลูกค้าเลื่อนวัน/เปลี่ยนสถานที่ แจ้งล่วงหน้า 7 วัน</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="revenueDetailModal" class="modal">
+        <div class="modal-content-lg p-0">
+             <div class="modal-header-custom flex justify-between items-center p-4 rounded-t-lg">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-white">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-xl font-semibold text-white">รายละเอียดรายได้</h3>
+                </div>
+                <button id="closeRevenueModalBtn" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-600 mb-2 flex items-center">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-sm mr-2 text-gray-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                        </svg>
+                        รายได้แยกตามประเภทงาน (ทั้งหมด)
+                    </h4>
+                    <div id="revenueByTypeContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    </div>
+                </div>
+                
+                <hr class="my-6">
+
+                <div>
+                    <h4 class="text-md font-semibold text-gray-600 mb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-sm mr-2 text-gray-500">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                        </svg>
+                        สรุปรายได้ตามช่วงเวลาและประเภทงาน
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label for="revenueYearFilter" class="block text-sm font-medium text-gray-600 mb-1">เลือกปี:</label>
+                            <select id="revenueYearFilter" class="k-minimal-select text-sm"></select>
+                        </div>
+                        <div>
+                            <label for="revenueMonthFilter" class="block text-sm font-medium text-gray-600 mb-1">เลือกเดือน:</label>
+                            <select id="revenueMonthFilter" class="k-minimal-select text-sm">
+                                <option value="all">ทุกเดือน</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="revenueJobTypeFilter" class="block text-sm font-medium text-gray-600 mb-1">เลือกประเภทงาน:</label>
+                            <select id="revenueJobTypeFilter" class="k-minimal-select text-sm">
+                                <option value="all">ทุกประเภท</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="applyRevenueFilterBtn" class="k-minimal-button text-sm mb-4">ดูสรุปรายได้ตามฟิลเตอร์</button>
+                    <div id="filteredRevenueResults" class="p-4 bg-gray-50 rounded-lg text-sm">
+                        <p class="text-gray-500">กรุณาเลือกฟิลเตอร์และกดปุ่มเพื่อดูสรุป</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip"></div> <script>
+        // --- CONFIGURATION ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbys8jwhD8XEmMoIx24klSydoE8O2pgb5PGP6Uf7pWuuf59aSjA6vAL7iQPrsA45BjoomQ/exec'; 
+        const GOOGLE_SHEET_ID = '1tJS7z2XvZcTcMqx5vbwyokDnAqpDITUmNiRacuZiqsM'; 
+        const SHEET_NAME = 'Bookings'; 
+
+        // --- DOM Elements ---
+        const navHome = document.getElementById('navHome');
+        const navAllBookings = document.getElementById('navAllBookings');
+        const navAdminLogin = document.getElementById('navAdminLogin');
+
+        const homePage = document.getElementById('homePage');
+        const allBookingsPage = document.getElementById('allBookingsPage');
+
+        const adminLoginPage = document.getElementById('adminLoginPage');
+        const adminPanelPage = document.getElementById('adminPanelPage');
+        
+        const bookingForm = document.getElementById('bookingForm');
+        const upcomingEventsList = document.getElementById('upcomingEventsList');
+        
+        const adminBookingList = document.getElementById('adminBookingList');
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+        const jobTypeDashboardsContainer = document.getElementById('jobTypeDashboardsContainer');
+        const summaryRevenueOverall = document.getElementById('summaryRevenueOverall');
+        const summaryJobStatusOverall = document.getElementById('summaryJobStatusOverall');
+        const summaryRevenueClickable = document.getElementById('summaryRevenueClickable');
+        const revenuePieChartContainer = document.getElementById('revenuePieChartContainer');
+        const studentDonutChartContainer = document.getElementById('studentDonutChartContainer');
+
+
+        const bookingDetailModal = document.getElementById('bookingDetailModal');
+        const modalTitle = document.getElementById('modalTitle'); 
+        const modalBodyStandard = document.getElementById('modalBodyStandard'); 
+        const closeModalBtnStandard = document.getElementById('closeModalBtnStandard');
+
+        const revenueDetailModal = document.getElementById('revenueDetailModal');
+        const closeRevenueModalBtn = document.getElementById('closeRevenueModalBtn');
+        const revenueByTypeContainer = document.getElementById('revenueByTypeContainer');
+        const revenueYearFilter = document.getElementById('revenueYearFilter');
+        const revenueMonthFilter = document.getElementById('revenueMonthFilter');
+        const revenueJobTypeFilter = document.getElementById('revenueJobTypeFilter');
+        const applyRevenueFilterBtn = document.getElementById('applyRevenueFilterBtn');
+        const filteredRevenueResults = document.getElementById('filteredRevenueResults');
+
+        const calendarView = document.getElementById('calendarView');
+        const calendarMonthYear = document.getElementById('calendarMonthYear');
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
+        const sortOrderAdminSelect = document.getElementById('sortOrderAdmin');
+        const calendarMonthlySummaryEl = document.getElementById('calendarMonthlySummary');
+        const tooltip = d3.select(".tooltip");
+
+
+        let allBookingsData = []; 
+        let currentCalendarDate = new Date();
+        let currentAdminSortOrder = 'startDateTimeAsc';
+        let isAdminLoggedIn = false;
+
+        function showPage(pageId) {
+            [homePage, allBookingsPage, adminLoginPage, adminPanelPage].forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            [navHome, navAllBookings, navAdminLogin].forEach(nav => nav.classList.remove('active'));
+            if (pageId === 'homePage') navHome.classList.add('active');
+            else if (pageId === 'allBookingsPage') navAllBookings.classList.add('active');
+            else if (pageId === 'adminLoginPage' || pageId === 'adminPanelPage') navAdminLogin.classList.add('active');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                const dayOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+                const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
+                return `${date.toLocaleDateString('th-TH', dayOptions)} : ${date.toLocaleTimeString('th-TH', timeOptions)} น.`;
+            } catch (e) { return 'Invalid Date'; }
+        }
+        
+        function formatShortDate(dateString) {
+            if (!dateString) return 'N/A';
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            try {
+                return new Date(dateString).toLocaleDateString('th-TH', options);
+            } catch (e) { return 'Invalid Date'; }
+        }
+
+        function calculateDuration(start, end) {
+            if (!start || !end) return 'N/A';
+            try {
+                const diffMs = new Date(end) - new Date(start);
+                const diffHours = diffMs / (1000 * 60 * 60);
+                return diffHours.toFixed(2) + ' ชั่วโมง';
+            } catch (e) { return 'N/A'; }
+        }
+
+        function jsonpRequest(url, callbackName, callbackFunction) {
+            const script = document.createElement('script');
+            script.src = `${url}&callback=${callbackName}`;
+            window[callbackName] = (data) => {
+                try {
+                    callbackFunction(data);
+                } catch (error) {
+                    console.error("Error in JSONP callback:", error);
+                    Swal.fire('ข้อผิดพลาด!', 'เกิดปัญหาในการประมวลผลข้อมูลจากเซิร์ฟเวอร์', 'error');
+                } finally {
+                    if(document.body.contains(script)) { 
+                        document.body.removeChild(script);
+                    }
+                    delete window[callbackName];
+                }
+            };
+            document.body.appendChild(script);
+            script.onerror = () => {
+                 Swal.fire('ข้อผิดพลาด!', 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ (JSONP Error)', 'error');
+                 if (document.body.contains(script)) document.body.removeChild(script);
+                 delete window[callbackName];
+            };
+        }
+
+        bookingForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const formData = new FormData(bookingForm);
+            const data = Object.fromEntries(formData.entries());
+            data.bookingDateSystem = new Date().toISOString();
+            data.action = data.bookingId && data.bookingId.trim() !== '' ? 'updateBooking' : 'saveBooking';
+
+            data.price = parseFloat(data.price) || 0;
+            data.deposit = parseFloat(data.deposit) || 0;
+            data.numPeople = parseInt(data.numPeople) || null;
+
+            let params = new URLSearchParams(data).toString();
+            
+            jsonpRequest(`${APPS_SCRIPT_URL}?${params}`, 'handleSaveResponse', (response) => {
+                if (response.success) {
+                    Swal.fire('สำเร็จ!', response.message, 'success');
+                    bookingForm.reset();
+                    document.getElementById('bookingId').value = ''; 
+                    fetchBookings(); 
+                } else {
+                    Swal.fire('เกิดข้อผิดพลาด!', response.message || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+                }
+            });
+        });
+
+        function fetchBookings() {
+            jsonpRequest(`${APPS_SCRIPT_URL}?action=getBookings`, 'handleFetchResponse', (data) => {
+                if (data && Array.isArray(data)) {
+                    allBookingsData = data.map(item => ({
+                        ...item,
+                        startDateTime: item.startDateTime ? new Date(item.startDateTime) : null,
+                        endDateTime: item.endDateTime ? new Date(item.endDateTime) : null,
+                        bookingDateSystem: item.bookingDateSystem ? new Date(item.bookingDateSystem) : null,
+                        price: parseFloat(item.price) || 0, 
+                        deposit: parseFloat(item.deposit) || 0,
+                        numPeople: parseInt(item.numPeople) || 0 
+                    })).filter(item => item.typeOfWork); 
+
+                    renderUpcomingEvents();
+                    renderAllBookingsList(); 
+                    renderCalendar(); 
+                    if (isAdminLoggedIn) {
+                        renderAdminBookingList();
+                        renderAdminDashboards();
+                        populateRevenueFilterDropdowns(); 
+                    }
+                } else {
+                    console.error("Failed to fetch bookings or data is not an array:", data);
+                    upcomingEventsList.innerHTML = '<p class="text-red-500">ไม่สามารถโหลดข้อมูลคิวงานได้</p>';
+                    if (allBookingsPage.style.display !== 'none') {
+                         document.getElementById('allBookingsList').innerHTML = '<p class="text-red-500">ไม่สามารถโหลดข้อมูลตารางงานทั้งหมดได้</p>';
+                         if(calendarMonthlySummaryEl) calendarMonthlySummaryEl.textContent = 'ไม่สามารถโหลดข้อมูลสรุปได้';
+                    }
+                     if (isAdminLoggedIn) { 
+                        jobTypeDashboardsContainer.innerHTML = '<p class="text-red-500 col-span-full">ไม่สามารถโหลดข้อมูลสรุปงานได้</p>';
+                        summaryRevenueOverall.innerHTML = '<p class="text-red-500">ไม่สามารถโหลดข้อมูลรายได้</p>';
+                        summaryJobStatusOverall.innerHTML = '<p class="text-red-500">ไม่สามารถโหลดสถานะงาน</p>';
+                        if (revenuePieChartContainer) revenuePieChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่สามารถโหลดกราฟรายได้</p>';
+                        if (studentDonutChartContainer) studentDonutChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่สามารถโหลดกราฟนักเรียน</p>';
+                    }
+                }
+            });
+        }
+        
+        function sortBookings(bookings, criteria) {
+            return [...bookings].sort((a, b) => {
+                let valA, valB;
+                switch (criteria) {
+                    case 'startDateTimeAsc':
+                        valA = a.startDateTime ? a.startDateTime.getTime() : 0;
+                        valB = b.startDateTime ? b.startDateTime.getTime() : 0;
+                        return valA - valB;
+                    case 'startDateTimeDesc':
+                        valA = a.startDateTime ? a.startDateTime.getTime() : 0;
+                        valB = b.startDateTime ? b.startDateTime.getTime() : 0;
+                        return valB - valA;
+                    case 'bookingDateDesc':
+                        valA = a.bookingDateSystem ? a.bookingDateSystem.getTime() : 0;
+                        valB = b.bookingDateSystem ? b.bookingDateSystem.getTime() : 0;
+                        return valB - valA;
+                    default:
+                        return 0;
+                }
+            });
+        }
+
+        function renderUpcomingEvents() {
+            const now = new Date();
+            const upcoming = sortBookings(allBookingsData, 'startDateTimeAsc')
+                .filter(b => b.startDateTime && b.startDateTime >= now)
+                .slice(0, 20);
+
+            upcomingEventsList.innerHTML = '';
+            if (upcoming.length === 0) {
+                upcomingEventsList.innerHTML = '<p class="text-gray-500">ไม่มีคิวงานที่กำลังจะมาถึง</p>';
+                return;
+            }
+            upcoming.forEach(booking => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer';
+                eventDiv.innerHTML = `
+                    <h4 class="font-semibold text-green-600">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                    <p class="text-sm text-gray-600">วันที่: ${formatDate(booking.startDateTime)}</p>
+                    <p class="text-sm text-gray-500">สถานที่: ${booking.location || 'N/A'}</p>
+                `;
+                eventDiv.onclick = () => showBookingDetails(booking.rowId || booking.id); 
+                upcomingEventsList.appendChild(eventDiv);
+            });
+        }
+        
+        function renderAllBookingsList() { 
+            const listContainer = document.getElementById('allBookingsList');
+            listContainer.innerHTML = ''; 
+            const sortedBookings = sortBookings(allBookingsData, 'startDateTimeAsc');
+            if (sortedBookings.length === 0) {
+                listContainer.innerHTML = '<p class="text-gray-500">ไม่มีข้อมูลคิวงาน</p>';
+                return;
+            }
+            sortedBookings.forEach(booking => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer';
+                itemDiv.innerHTML = `
+                    <h4 class="font-semibold text-md">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                    <p class="text-sm text-gray-600">วันที่เริ่ม: ${formatDate(booking.startDateTime)}</p>
+                    <p class="text-sm text-gray-600">สถานที่: ${booking.location || 'N/A'}</p>
+                    <p class="text-sm text-gray-500">ราคา: ${booking.price ? booking.price.toLocaleString() : '0'} บาท, มัดจำ: ${booking.deposit ? booking.deposit.toLocaleString() : '0'} บาท</p>
+                `;
+                itemDiv.onclick = () => showBookingDetails(booking.rowId || booking.id);
+                listContainer.appendChild(itemDiv);
+            });
+        }
+
+        function renderCalendar() {
+            calendarView.innerHTML = ''; 
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth(); 
+
+            calendarMonthYear.textContent = `${currentCalendarDate.toLocaleDateString('th-TH', { month: 'long' })} ${year + 543}`;
+
+            const firstDayOfMonth = new Date(year, month, 1);
+            const lastDayOfMonth = new Date(year, month + 1, 0);
+            const daysInMonth = lastDayOfMonth.getDate();
+            const startingDayOfWeek = firstDayOfMonth.getDay(); 
+
+            const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+            dayNames.forEach(name => {
+                const headerCell = document.createElement('div');
+                headerCell.className = 'calendar-header';
+                headerCell.textContent = name;
+                calendarView.appendChild(headerCell);
+            });
+
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day other-month';
+                calendarView.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'calendar-day';
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'calendar-day-number';
+                dayNumber.textContent = day;
+                dayCell.appendChild(dayNumber);
+
+                const bookingsOnThisDay = allBookingsData.filter(b => {
+                    if (!b.startDateTime) return false;
+                    const bookingStartDate = new Date(b.startDateTime);
+                    return bookingStartDate.getFullYear() === year &&
+                           bookingStartDate.getMonth() === month &&
+                           bookingStartDate.getDate() === day;
+                });
+
+                bookingsOnThisDay.forEach(booking => {
+                    const eventChip = document.createElement('div');
+                    eventChip.className = 'calendar-event';
+                    eventChip.textContent = `${(booking.typeOfWork || 'N/A').substring(0,10)}... (${(booking.clientName || 'N/A').substring(0,5)}...)`;
+                    eventChip.title = `${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}`;
+                    eventChip.onclick = (e) => {
+                        e.stopPropagation(); 
+                        showBookingDetails(booking.rowId || booking.id);
+                    };
+                    dayCell.appendChild(eventChip);
+                });
+                calendarView.appendChild(dayCell);
+            }
+
+            const bookingsInCurrentMonth = allBookingsData.filter(b => {
+                if (!b.startDateTime) return false;
+                const bookingStartDate = new Date(b.startDateTime);
+                return bookingStartDate.getFullYear() === year &&
+                       bookingStartDate.getMonth() === month;
+            });
+            const totalBookingsThisMonth = bookingsInCurrentMonth.length;
+
+            if (calendarMonthlySummaryEl) {
+                calendarMonthlySummaryEl.textContent = `จำนวนงานในเดือนนี้: ${totalBookingsThisMonth} งาน`;
+            }
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        function showBookingDetails(bookingId) {
+            const booking = allBookingsData.find(b => (b.rowId === bookingId || b.id === bookingId)); 
+            if (!booking) {
+                Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลคิวงาน', 'error');
+                return;
+            }
+
+            modalTitle.textContent = `คิวงาน: ${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}`;
+            const remainingPayment = (parseFloat(booking.price) || 0) - (parseFloat(booking.deposit) || 0);
+
+            modalBodyStandard.innerHTML = `
+                <p><strong>ประเภทงาน:</strong> ${booking.typeOfWork || 'N/A'}</p>
+                <p><strong>สถานที่ถ่าย:</strong> ${booking.location || 'N/A'}</p>
+                <p><strong>จำนวนคน:</strong> ${booking.numPeople || 'N/A'}</p>
+                <p><strong>วันที่ : เวลา:</strong> ${formatDate(booking.startDateTime)}</p> 
+                <p><strong>ระยะเวลา:</strong> ${calculateDuration(booking.startDateTime, booking.endDateTime)}</p>
+                <p><strong>ราคา:</strong> ${booking.price ? booking.price.toLocaleString() : '0'} บาท</p>
+                <p><strong>มัดจำแล้ว:</strong> ${booking.deposit ? booking.deposit.toLocaleString() : '0'} บาท</p>
+                <p><strong>คงเหลือ:</strong> <span class="font-bold text-red-600">${remainingPayment.toLocaleString()}</span> บาท</p>
+                <p><strong>ช่องทางการติดต่อ:</strong> ${booking.contactMethod || 'N/A'} - ${booking.contactDetail || 'N/A'}</p>
+                ${isAdminLoggedIn ? `
+                    <hr class="my-2 border-gray-200">
+                    <p><strong>สถานะงาน (Admin):</strong> <span class="${getWorkStatusClass(booking.workStatus)}">${booking.workStatus || 'ยังไม่ได้ระบุ'}</span></p>
+                    <p><strong>สถานะชำระเงิน (Admin):</strong> <span class="${getPaymentStatusClass(booking.paymentStatus)}">${booking.paymentStatus || 'ยังไม่ได้ระบุ'}</span></p>
+                ` : ''}
+            `;
+            bookingDetailModal.classList.add('active');
+        }
+
+        closeModalBtnStandard.addEventListener('click', () => {
+            bookingDetailModal.classList.remove('active');
+        });
+        bookingDetailModal.addEventListener('click', (event) => { 
+            if (event.target === bookingDetailModal) {
+                bookingDetailModal.classList.remove('active');
+            }
+        });
+
+        adminLoginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = adminLoginForm.username.value;
+            const password = adminLoginForm.password.value;
+
+            if (username === 'admin' && password === '434240129') {
+                isAdminLoggedIn = true;
+                showPage('adminPanelPage');
+                navAdminLogin.textContent = 'Admin Panel'; 
+                fetchBookings(); 
+                Swal.fire('สำเร็จ!', 'เข้าสู่ระบบ Admin สำเร็จ', 'success');
+            } else {
+                Swal.fire('ผิดพลาด!', 'Username หรือ Password ไม่ถูกต้อง', 'error');
+            }
+        });
+
+        adminLogoutBtn.addEventListener('click', () => {
+            isAdminLoggedIn = false;
+            showPage('homePage');
+            navAdminLogin.textContent = 'Admin'; 
+            adminLoginForm.reset(); 
+            Swal.fire('สำเร็จ!', 'ออกจากระบบ Admin แล้ว', 'info');
+        });
+        
+        sortOrderAdminSelect.addEventListener('change', (event) => {
+            currentAdminSortOrder = event.target.value;
+            renderAdminBookingList();
+        });
+
+        function renderAdminBookingList() {
+            adminBookingList.innerHTML = '';
+            if (!isAdminLoggedIn || allBookingsData.length === 0) {
+                adminBookingList.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-500">ไม่มีข้อมูลคิวงาน</td></tr>';
+                return;
+            }
+            
+            const sortedBookingsForAdmin = sortBookings(allBookingsData, currentAdminSortOrder);
+
+            sortedBookingsForAdmin.forEach(booking => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-gray-200 hover:bg-gray-50';
+                tr.innerHTML = `
+                    <td class="p-3">${booking.typeOfWork || 'N/A'}</td>
+                    <td class="p-3">${booking.clientName || 'N/A'}</td>
+                    <td class="p-3">${formatShortDate(booking.startDateTime)}</td>
+                    <td class="p-3">${booking.price ? booking.price.toLocaleString() : '0'}</td>
+                    <td class="p-3"><span class="${getWorkStatusClass(booking.workStatus)}">${booking.workStatus || 'N/A'}</span></td>
+                    <td class="p-3"><span class="${getPaymentStatusClass(booking.paymentStatus)}">${booking.paymentStatus || 'N/A'}</span></td>
+                    <td class="p-3 space-x-1 whitespace-nowrap">
+                        <button class="text-xs p-1 bg-blue-500 text-white rounded hover:bg-blue-600" onclick="editBooking('${booking.rowId || booking.id}')">แก้ไข</button>
+                        <button class="text-xs p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600" onclick="showBookingDetails('${booking.rowId || booking.id}')">ดู</button>
+                        <select class="text-xs p-1 border rounded max-w-[100px]" onchange="updateStatus('${booking.rowId || booking.id}', 'workStatus', this.value)">
+                            <option value="" ${!booking.workStatus ? 'selected' : ''}>สถานะงาน...</option>
+                            <option value="ยังไม่ทำ" ${booking.workStatus === 'ยังไม่ทำ' ? 'selected' : ''}>ยังไม่ทำ</option>
+                            <option value="กำลังทำรูป" ${booking.workStatus === 'กำลังทำรูป' ? 'selected' : ''}>กำลังทำรูป</option>
+                            <option value="ส่งงานแล้ว" ${booking.workStatus === 'ส่งงานแล้ว' ? 'selected' : ''}>ส่งงานแล้ว</option>
+                        </select>
+                        <select class="text-xs p-1 border rounded max-w-[100px]" onchange="updateStatus('${booking.rowId || booking.id}', 'paymentStatus', this.value)">
+                            <option value="" ${!booking.paymentStatus ? 'selected' : ''}>สถานะชำระ...</option>
+                            <option value="ยังไม่ครบ" ${booking.paymentStatus === 'ยังไม่ครบ' ? 'selected' : ''}>ยังไม่ครบ</option>
+                            <option value="ชำระครบแล้ว" ${booking.paymentStatus === 'ชำระครบแล้ว' ? 'selected' : ''}>ชำระครบแล้ว</option>
+                        </select>
+                    </td>
+                `;
+                adminBookingList.appendChild(tr);
+            });
+        }
+        
+        function getWorkStatusClass(status) {
+            if (status === 'ส่งงานแล้ว') return 'status-green';
+            if (status === 'กำลังทำรูป') return 'status-yellow';
+            if (status === 'ยังไม่ทำ') return 'status-red';
+            return 'text-gray-500';
+        }
+
+        function getPaymentStatusClass(status) {
+            if (status === 'ชำระครบแล้ว') return 'status-green';
+            if (status === 'ยังไม่ครบ') return 'status-red';
+            return 'text-gray-500';
+        }
+
+        window.editBooking = function(bookingId) { 
+            const booking = allBookingsData.find(b => (b.rowId === bookingId || b.id === bookingId));
+            if (!booking) return;
+
+            document.getElementById('bookingId').value = booking.rowId || booking.id; 
+            document.getElementById('typeOfWork').value = booking.typeOfWork || '';
+            document.getElementById('location').value = booking.location || '';
+            document.getElementById('numPeople').value = booking.numPeople || '';
+            if (booking.startDateTime && booking.startDateTime instanceof Date) {
+                 document.getElementById('startDateTime').value = new Date(booking.startDateTime.getTime() - (booking.startDateTime.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            } else {
+                 document.getElementById('startDateTime').value = '';
+            }
+            if (booking.endDateTime && booking.endDateTime instanceof Date) {
+                 document.getElementById('endDateTime').value = new Date(booking.endDateTime.getTime() - (booking.endDateTime.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            } else {
+                document.getElementById('endDateTime').value = '';
+            }
+            document.getElementById('price').value = booking.price || 0;
+            document.getElementById('deposit').value = booking.deposit || 0;
+            document.getElementById('clientName').value = booking.clientName || '';
+            document.getElementById('contactMethod').value = booking.contactMethod || 'Facebook';
+            document.getElementById('contactDetail').value = booking.contactDetail || '';
+            
+            showPage('homePage'); 
+            document.getElementById('bookingFormSection').scrollIntoView({ behavior: 'smooth' });
+            Swal.fire('ข้อมูลถูกโหลดในฟอร์มแล้ว', 'แก้ไขรายละเอียดและกดบันทึก', 'info');
+        }
+        
+        window.updateStatus = function(bookingId, field, value) { 
+            Swal.fire({
+                title: 'กำลังอัปเดตสถานะ...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const data = {
+                action: 'updateStatus',
+                bookingId: bookingId, 
+                field: field,
+                value: value
+            };
+            let params = new URLSearchParams(data).toString();
+
+            jsonpRequest(`${APPS_SCRIPT_URL}?${params}`, 'handleStatusUpdateResponse', (response) => {
+                if (response.success) {
+                    Swal.fire('สำเร็จ!', 'อัปเดตสถานะเรียบร้อย', 'success');
+                    fetchBookings(); 
+                } else {
+                    Swal.fire('ผิดพลาด!', response.message || 'ไม่สามารถอัปเดตสถานะได้', 'error');
+                }
+            });
+        }
+
+        function renderAdminDashboards() {
+            if (!isAdminLoggedIn || !allBookingsData || allBookingsData.length === 0) {
+                 jobTypeDashboardsContainer.innerHTML = '<p class="text-red-500 col-span-full">ไม่มีข้อมูลสำหรับแสดงผล Dashboard</p>';
+                 summaryRevenueOverall.innerHTML = '<p class="text-red-500">ไม่มีข้อมูลรายได้</p>';
+                 summaryJobStatusOverall.innerHTML = '<p class="text-red-500">ไม่มีข้อมูลสถานะงาน</p>';
+                 if (revenuePieChartContainer) revenuePieChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่มีข้อมูลสำหรับกราฟรายได้</p>';
+                 if (studentDonutChartContainer) studentDonutChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่มีข้อมูลสำหรับกราฟนักเรียน</p>';
+                return;
+            }
+            
+            jobTypeDashboardsContainer.innerHTML = ''; 
+
+            const jobTypes = [...new Set(allBookingsData.map(b => b.typeOfWork).filter(Boolean))];
+
+            jobTypes.forEach(type => {
+                const typeBookings = allBookingsData.filter(b => b.typeOfWork === type);
+                const totalCount = typeBookings.length;
+                const notDone = typeBookings.filter(b => b.workStatus === 'ยังไม่ทำ' || !b.workStatus).length;
+                const inProgress = typeBookings.filter(b => b.workStatus === 'กำลังทำรูป').length;
+                const done = typeBookings.filter(b => b.workStatus === 'ส่งงานแล้ว').length;
+
+                const card = document.createElement('div');
+                card.className = 'dashboard-metric-card';
+                card.innerHTML = `
+                    <h4>${type}</h4>
+                    <p>จำนวนงานทั้งหมด: <strong>${totalCount}</strong></p>
+                    <p><span class="status-red">ยังไม่ทำ:</span> ${notDone}</p>
+                    <p><span class="status-yellow">กำลังทำรูป:</span> ${inProgress}</p>
+                    <p><span class="status-green">ส่งงานแล้ว:</span> ${done}</p>
+                `;
+                jobTypeDashboardsContainer.appendChild(card);
+            });
+            if (jobTypes.length === 0) {
+                 jobTypeDashboardsContainer.innerHTML = '<p class="text-gray-500 col-span-full">ยังไม่มีประเภทงานที่บันทึกไว้</p>';
+            }
+
+            const totalRevenue = allBookingsData.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+            const totalDeposit = allBookingsData.reduce((sum, b) => sum + (parseFloat(b.deposit) || 0), 0);
+            const paidRevenue = allBookingsData
+                .filter(b => b.paymentStatus === 'ชำระครบแล้ว')
+                .reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+            const outstandingRevenue = totalRevenue - paidRevenue; 
+
+            summaryRevenueOverall.innerHTML = `
+                <p class="text-sm">รายได้ทั้งหมด (ตามราคา): <strong>${totalRevenue.toLocaleString()} บาท</strong></p>
+                <p class="text-sm">รายได้ที่ชำระแล้ว (โดยประมาณ): ${paidRevenue.toLocaleString()} บาท</p>
+                <p class="text-sm">ค้างชำระ (โดยประมาณ): ${outstandingRevenue.toLocaleString()} บาท</p>
+                <p class="text-sm">รวมเงินมัดจำ: ${totalDeposit.toLocaleString()} บาท</p>
+            `;
+
+            const overallNotDone = allBookingsData.filter(b => b.workStatus === 'ยังไม่ทำ' || !b.workStatus).length;
+            const overallInProgress = allBookingsData.filter(b => b.workStatus === 'กำลังทำรูป').length;
+            const overallDone = allBookingsData.filter(b => b.workStatus === 'ส่งงานแล้ว').length;
+            const overallTotalJobs = allBookingsData.length;
+
+            summaryJobStatusOverall.innerHTML = `
+                <p class="text-sm">งานทั้งหมด: <strong>${overallTotalJobs}</strong></p>
+                <p><span class="status-red">ยังไม่ทำ:</span> ${overallNotDone}</p>
+                <p><span class="status-yellow">กำลังทำรูป:</span> ${overallInProgress}</p>
+                <p><span class="status-green">ส่งงานแล้ว:</span> ${overallDone}</p>
+            `;
+
+            // Render Charts
+            renderRevenuePieChart(allBookingsData);
+            renderStudentBySchoolDonutChart(allBookingsData);
+        }
+
+        summaryRevenueClickable.addEventListener('click', () => {
+            if (!isAdminLoggedIn) return;
+            populateRevenueFilterDropdowns(); 
+            renderRevenueByType(); 
+            filteredRevenueResults.innerHTML = '<p class="text-gray-500">กรุณาเลือกฟิลเตอร์และกดปุ่มเพื่อดูสรุป</p>'; 
+            revenueDetailModal.classList.add('active');
+        });
+
+        closeRevenueModalBtn.addEventListener('click', () => {
+            revenueDetailModal.classList.remove('active');
+        });
+        revenueDetailModal.addEventListener('click', (event) => {
+            if (event.target === revenueDetailModal) {
+                revenueDetailModal.classList.remove('active');
+            }
+        });
+
+        function populateRevenueFilterDropdowns() {
+            if (!allBookingsData || allBookingsData.length === 0) return;
+
+            const years = [...new Set(allBookingsData.map(b => b.startDateTime ? new Date(b.startDateTime).getFullYear() : null).filter(Boolean))].sort((a,b) => b-a);
+            revenueYearFilter.innerHTML = '<option value="all">ทุกปี</option>';
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year + 543; 
+                revenueYearFilter.appendChild(option);
+            });
+
+            revenueMonthFilter.innerHTML = '<option value="all">ทุกเดือน</option>';
+            const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            for (let i = 0; i < 12; i++) {
+                const option = document.createElement('option');
+                option.value = i + 1; 
+                option.textContent = thaiMonths[i];
+                revenueMonthFilter.appendChild(option);
+            }
+
+            const jobTypes = [...new Set(allBookingsData.map(b => b.typeOfWork).filter(Boolean))].sort();
+            revenueJobTypeFilter.innerHTML = '<option value="all">ทุกประเภท</option>';
+            jobTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                revenueJobTypeFilter.appendChild(option);
+            });
+        }
+        
+        function renderRevenueByType() {
+            revenueByTypeContainer.innerHTML = '';
+            if (!allBookingsData || allBookingsData.length === 0) {
+                revenueByTypeContainer.innerHTML = '<p class="text-gray-500 col-span-full">ไม่มีข้อมูลรายได้ตามประเภท</p>';
+                return;
+            }
+            const jobTypes = [...new Set(allBookingsData.map(b => b.typeOfWork).filter(Boolean))];
+            if (jobTypes.length === 0) {
+                 revenueByTypeContainer.innerHTML = '<p class="text-gray-500 col-span-full">ไม่พบประเภทงาน</p>';
+                 return;
+            }
+
+            jobTypes.forEach(type => {
+                const typeBookings = allBookingsData.filter(b => b.typeOfWork === type);
+                const typeRevenue = typeBookings.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+                const typeDeposit = typeBookings.reduce((sum, b) => sum + (parseFloat(b.deposit) || 0), 0);
+                const typePaidFull = typeBookings.filter(b => b.paymentStatus === 'ชำระครบแล้ว').reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'p-3 bg-gray-50 rounded';
+                itemDiv.innerHTML = `
+                    <h5 class="font-medium text-gray-700">${type}</h5>
+                    <p>รายได้รวม (ตามราคา): ${typeRevenue.toLocaleString()} บาท</p>
+                    <p>มัดจำรวม: ${typeDeposit.toLocaleString()} บาท</p>
+                    <p>ชำระครบแล้ว: ${typePaidFull.toLocaleString()} บาท</p>
+                `;
+                revenueByTypeContainer.appendChild(itemDiv);
+            });
+        }
+
+        applyRevenueFilterBtn.addEventListener('click', () => {
+            const selectedYear = revenueYearFilter.value;
+            const selectedMonth = revenueMonthFilter.value; 
+            const selectedJobType = revenueJobTypeFilter.value;
+
+            let filteredData = [...allBookingsData];
+
+            if (selectedYear !== 'all') {
+                filteredData = filteredData.filter(b => b.startDateTime && new Date(b.startDateTime).getFullYear() == parseInt(selectedYear));
+            }
+            if (selectedMonth !== 'all') {
+                filteredData = filteredData.filter(b => b.startDateTime && (new Date(b.startDateTime).getMonth() + 1) == parseInt(selectedMonth));
+            }
+            if (selectedJobType !== 'all') {
+                filteredData = filteredData.filter(b => b.typeOfWork === selectedJobType);
+            }
+
+            const totalFilteredRevenue = filteredData.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+            const totalFilteredDeposit = filteredData.reduce((sum, b) => sum + (parseFloat(b.deposit) || 0), 0);
+            const countFilteredJobs = filteredData.length;
+
+            filteredRevenueResults.innerHTML = `
+                <p><strong>สรุปสำหรับฟิลเตอร์ที่เลือก:</strong></p>
+                <p>จำนวนงาน: ${countFilteredJobs} งาน</p>
+                <p>รายได้รวม (ตามราคา): ${totalFilteredRevenue.toLocaleString()} บาท</p>
+                <p>มัดจำรวม: ${totalFilteredDeposit.toLocaleString()} บาท</p>
+            `;
+             if(countFilteredJobs === 0) {
+                filteredRevenueResults.innerHTML += '<p class="text-orange-600 mt-2">ไม่พบข้อมูลตามเงื่อนไขที่เลือก</p>';
+            }
+        });
+
+        // --- D3 Chart Functions ---
+        function renderRevenuePieChart(data) {
+            d3.select("#revenuePieChartContainer svg").remove(); // Clear previous chart
+            if (!data || data.length === 0) {
+                revenuePieChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลรายได้สำหรับสร้างกราฟ</p>';
+                return;
+            }
+
+            const revenueData = d3.rollup(data, 
+                v => d3.sum(v, d => d.price), 
+                d => d.typeOfWork
+            );
+            const processedData = Array.from(revenueData, ([key, value]) => ({ type: key, revenue: value }))
+                                     .filter(d => d.revenue > 0);
+
+            if (processedData.length === 0) {
+                revenuePieChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลรายได้ที่มากกว่า 0</p>';
+                return;
+            }
+
+            const width = 300, height = 250, margin = 10;
+            const radius = Math.min(width, height) / 2 - margin;
+
+            const svg = d3.select("#revenuePieChartContainer")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`);
+
+            const color = d3.scaleOrdinal(d3.schemePastel1);
+            const pie = d3.pie().value(d => d.revenue);
+            const data_ready = pie(processedData);
+
+            const arc = d3.arc().innerRadius(0).outerRadius(radius);
+
+            svg.selectAll('slices')
+                .data(data_ready)
+                .join('path')
+                .attr('d', arc)
+                .attr('fill', d => color(d.data.type))
+                .attr("stroke", "white")
+                .style("stroke-width", "2px")
+                .style("opacity", 0.8)
+                .on("mouseover", function(event, d) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html(`${d.data.type}<br/>รายได้: ${d.data.revenue.toLocaleString()} บาท`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                    d3.select(this).style("opacity", 1);
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                    d3.select(this).style("opacity", 0.8);
+                });
+        }
+
+        function renderStudentBySchoolDonutChart(data) {
+            d3.select("#studentDonutChartContainer svg").remove(); // Clear previous chart
+            if (!data || data.length === 0) {
+                 studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลนักเรียนสำหรับสร้างกราฟ</p>';
+                return;
+            }
+
+            const studentPortfolioData = data.filter(d => d.typeOfWork === "โปรไฟล์นักเรียน | portfolio" && d.location && d.numPeople > 0);
+            
+            if (studentPortfolioData.length === 0) {
+                studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่พบข้อมูล "โปรไฟล์นักเรียน | portfolio" ที่มีจำนวนคนและสถานที่</p>';
+                return;
+            }
+
+            const studentDataBySchool = d3.rollup(studentPortfolioData,
+                v => d3.sum(v, d => d.numPeople),
+                d => d.location // Assuming location is school
+            );
+            const processedData = Array.from(studentDataBySchool, ([key, value]) => ({ school: key, count: value }))
+                                        .filter(d => d.count > 0);
+            
+            if (processedData.length === 0) {
+                studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลจำนวนนักเรียนที่มากกว่า 0</p>';
+                return;
+            }
+
+
+            const width = 300, height = 250, margin = 10;
+            const radius = Math.min(width, height) / 2 - margin;
+
+            const svg = d3.select("#studentDonutChartContainer")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${width / 2},${height / 2})`);
+
+            const color = d3.scaleOrdinal(d3.schemePastel2); // Different color scheme
+            const pie = d3.pie().value(d => d.count);
+            const data_ready = pie(processedData);
+
+            const arc = d3.arc().innerRadius(radius * 0.5).outerRadius(radius); // For donut
+
+            svg.selectAll('slices')
+                .data(data_ready)
+                .join('path')
+                .attr('d', arc)
+                .attr('fill', d => color(d.data.school))
+                .attr("stroke", "white")
+                .style("stroke-width", "2px")
+                .style("opacity", 0.8)
+                 .on("mouseover", function(event, d) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html(`${d.data.school}<br/>จำนวน: ${d.data.count} คน`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                    d3.select(this).style("opacity", 1);
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                    d3.select(this).style("opacity", 0.8);
+                });
+        }
+
+
+        navHome.addEventListener('click', () => showPage('homePage'));
+        navAllBookings.addEventListener('click', () => {
+            showPage('allBookingsPage');
+            renderCalendar(); 
+        });
+        navAdminLogin.addEventListener('click', () => {
+            if (isAdminLoggedIn) {
+                showPage('adminPanelPage');
+            } else {
+                showPage('adminLoginPage');
+            }
+        });
+
+        showPage('homePage');
+        fetchBookings();
+        renderCalendar(); 
+
+    </script>
+</body>
+</html>
