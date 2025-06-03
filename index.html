@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://d3js.org/d3.v7.min.js"></script> <style>
+    <script src="https://d3js.org/d3.v7.min.js"></script> 
+    <style>
         body {
             font-family: 'Prompt', sans-serif;
             background-color: #f0f2f5; 
@@ -124,8 +125,7 @@
 
         .chart-container {
             width: 100%;
-            max-width: 400px; /* Adjust as needed */
-            height: 300px; /* Adjust as needed */
+            height: 300px; 
             margin: 10px auto;
             background-color: #fff;
             border-radius: 8px;
@@ -135,24 +135,40 @@
         .chart-container svg {
             display: block;
             margin: auto;
+            font-family: 'Prompt', sans-serif;
         }
         .chart-title {
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 1rem; 
             font-weight: 500;
-            color: #4A5568; /* gray-700 */
+            color: #4A5568; 
             margin-bottom: 10px;
+        }
+        .chart-total {
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: bold;
+            color: #2D3748; 
+            margin-top: 8px;
         }
         .tooltip {
             position: absolute;
             text-align: center;
             padding: 6px 10px;
-            font: 12px sans-serif;
-            background: lightsteelblue;
+            font: 12px 'Prompt', sans-serif;
+            background: rgba(220, 220, 220, 0.9); 
             border: 0px;
             border-radius: 8px;
             pointer-events: none;
             opacity: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .bar-label {
+            fill: white;
+            font-size: 10px;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none; 
         }
     </style>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></head>
@@ -248,7 +264,7 @@
                 <section id="upcomingEventsSection" class="k-minimal-card">
                     <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
                         <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
-                        คิวงานที่กำลังจะมาถึง (20 คิวล่าสุด)
+                        คิวงานที่กำลังจะมาถึง
                     </h2>
                     <div id="upcomingEventsList" class="space-y-3 max-h-96 overflow-y-auto">
                         <p class="text-gray-500">กำลังโหลดข้อมูลคิวงาน...</p>
@@ -358,15 +374,21 @@
                     </svg>
                     กราฟสรุปข้อมูล
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                     <div class="k-minimal-card">
-                        <h4 class="chart-title">กราฟวงกลมสรุปรายได้ตามประเภทงาน</h4>
+                        <h4 class="chart-title">สรุปรายได้ตามประเภทงาน</h4>
                         <div id="revenuePieChartContainer" class="chart-container"></div>
+                        <div id="totalRevenueDisplay" class="chart-total"></div>
                     </div>
                     <div class="k-minimal-card">
-                        <h4 class="chart-title">กราฟโดนัทจำนวนนักเรียนแยกตามโรงเรียน (จากโปรไฟล์นักเรียน)</h4>
+                        <h4 class="chart-title">จำนวนนักเรียนแยกตามโรงเรียน</h4>
                         <div id="studentDonutChartContainer" class="chart-container"></div>
+                        <div id="totalStudentDisplay" class="chart-total"></div>
                     </div>
+                </div>
+                <div class="k-minimal-card mb-6">
+                    <h4 class="chart-title">จำนวนนักเรียนแยกตามโรงเรียน</h4>
+                    <div id="studentBarChartContainer" class="w-full" style="min-height: 300px;"></div> 
                 </div>
                 
                 <hr class="my-6">
@@ -527,7 +549,8 @@
         </div>
     </div>
 
-    <div class="tooltip"></div> <script>
+    <div class="tooltip"></div> 
+    <script>
         // --- CONFIGURATION ---
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbys8jwhD8XEmMoIx24klSydoE8O2pgb5PGP6Uf7pWuuf59aSjA6vAL7iQPrsA45BjoomQ/exec'; 
         const GOOGLE_SHEET_ID = '1tJS7z2XvZcTcMqx5vbwyokDnAqpDITUmNiRacuZiqsM'; 
@@ -540,7 +563,6 @@
 
         const homePage = document.getElementById('homePage');
         const allBookingsPage = document.getElementById('allBookingsPage');
-
         const adminLoginPage = document.getElementById('adminLoginPage');
         const adminPanelPage = document.getElementById('adminPanelPage');
         
@@ -555,7 +577,10 @@
         const summaryJobStatusOverall = document.getElementById('summaryJobStatusOverall');
         const summaryRevenueClickable = document.getElementById('summaryRevenueClickable');
         const revenuePieChartContainer = document.getElementById('revenuePieChartContainer');
+        const totalRevenueDisplay = document.getElementById('totalRevenueDisplay');
         const studentDonutChartContainer = document.getElementById('studentDonutChartContainer');
+        const totalStudentDisplay = document.getElementById('totalStudentDisplay');
+        const studentBarChartContainer = document.getElementById('studentBarChartContainer');
 
 
         const bookingDetailModal = document.getElementById('bookingDetailModal');
@@ -712,6 +737,7 @@
                         summaryJobStatusOverall.innerHTML = '<p class="text-red-500">ไม่สามารถโหลดสถานะงาน</p>';
                         if (revenuePieChartContainer) revenuePieChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่สามารถโหลดกราฟรายได้</p>';
                         if (studentDonutChartContainer) studentDonutChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่สามารถโหลดกราฟนักเรียน</p>';
+                        if (studentBarChartContainer) studentBarChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่สามารถโหลดกราฟแท่งนักเรียน</p>';
                     }
                 }
             });
@@ -743,7 +769,7 @@
             const now = new Date();
             const upcoming = sortBookings(allBookingsData, 'startDateTimeAsc')
                 .filter(b => b.startDateTime && b.startDateTime >= now)
-                .slice(0, 20);
+                .slice(0, 20); 
 
             upcomingEventsList.innerHTML = '';
             if (upcoming.length === 0) {
@@ -1042,8 +1068,11 @@
                  jobTypeDashboardsContainer.innerHTML = '<p class="text-red-500 col-span-full">ไม่มีข้อมูลสำหรับแสดงผล Dashboard</p>';
                  summaryRevenueOverall.innerHTML = '<p class="text-red-500">ไม่มีข้อมูลรายได้</p>';
                  summaryJobStatusOverall.innerHTML = '<p class="text-red-500">ไม่มีข้อมูลสถานะงาน</p>';
-                 if (revenuePieChartContainer) revenuePieChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่มีข้อมูลสำหรับกราฟรายได้</p>';
-                 if (studentDonutChartContainer) studentDonutChartContainer.innerHTML = '<p class="text-center text-red-500">ไม่มีข้อมูลสำหรับกราฟนักเรียน</p>';
+                 if (revenuePieChartContainer) revenuePieChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลสำหรับกราฟรายได้</p>';
+                 if (totalRevenueDisplay) totalRevenueDisplay.textContent = '';
+                 if (studentDonutChartContainer) studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลสำหรับกราฟนักเรียน</p>';
+                 if (totalStudentDisplay) totalStudentDisplay.textContent = '';
+                 if (studentBarChartContainer) studentBarChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลสำหรับกราฟแท่งนักเรียน</p>';
                 return;
             }
             
@@ -1099,9 +1128,9 @@
                 <p><span class="status-green">ส่งงานแล้ว:</span> ${overallDone}</p>
             `;
 
-            // Render Charts
             renderRevenuePieChart(allBookingsData);
             renderStudentBySchoolDonutChart(allBookingsData);
+            renderStudentBySchoolBarChart(allBookingsData);
         }
 
         summaryRevenueClickable.addEventListener('click', () => {
@@ -1215,11 +1244,11 @@
             }
         });
 
-        // --- D3 Chart Functions ---
         function renderRevenuePieChart(data) {
-            d3.select("#revenuePieChartContainer svg").remove(); // Clear previous chart
+            d3.select("#revenuePieChartContainer svg").remove(); 
             if (!data || data.length === 0) {
                 revenuePieChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลรายได้สำหรับสร้างกราฟ</p>';
+                if(totalRevenueDisplay) totalRevenueDisplay.textContent = '';
                 return;
             }
 
@@ -1232,8 +1261,13 @@
 
             if (processedData.length === 0) {
                 revenuePieChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลรายได้ที่มากกว่า 0</p>';
+                if(totalRevenueDisplay) totalRevenueDisplay.textContent = '';
                 return;
             }
+            
+            const totalRevenueSum = processedData.reduce((sum, item) => sum + item.revenue, 0);
+            if(totalRevenueDisplay) totalRevenueDisplay.textContent = `รายได้รวมทั้งหมด: ${totalRevenueSum.toLocaleString()} บาท`;
+
 
             const width = 300, height = 250, margin = 10;
             const radius = Math.min(width, height) / 2 - margin;
@@ -1246,7 +1280,7 @@
                 .attr("transform", `translate(${width / 2},${height / 2})`);
 
             const color = d3.scaleOrdinal(d3.schemePastel1);
-            const pie = d3.pie().value(d => d.revenue);
+            const pie = d3.pie().value(d => d.revenue).sort(null); 
             const data_ready = pie(processedData);
 
             const arc = d3.arc().innerRadius(0).outerRadius(radius);
@@ -1264,39 +1298,45 @@
                     tooltip.html(`${d.data.type}<br/>รายได้: ${d.data.revenue.toLocaleString()} บาท`)
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
-                    d3.select(this).style("opacity", 1);
+                    d3.select(this).style("opacity", 1).style("stroke-width", "3px");
                 })
                 .on("mouseout", function(d) {
                     tooltip.transition().duration(500).style("opacity", 0);
-                    d3.select(this).style("opacity", 0.8);
+                    d3.select(this).style("opacity", 0.8).style("stroke-width", "2px");
                 });
         }
 
         function renderStudentBySchoolDonutChart(data) {
-            d3.select("#studentDonutChartContainer svg").remove(); // Clear previous chart
+            d3.select("#studentDonutChartContainer svg").remove(); 
             if (!data || data.length === 0) {
                  studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลนักเรียนสำหรับสร้างกราฟ</p>';
+                 if(totalStudentDisplay) totalStudentDisplay.textContent = '';
                 return;
             }
 
             const studentPortfolioData = data.filter(d => d.typeOfWork === "โปรไฟล์นักเรียน | portfolio" && d.location && d.numPeople > 0);
             
             if (studentPortfolioData.length === 0) {
-                studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่พบข้อมูล "โปรไฟล์นักเรียน | portfolio" ที่มีจำนวนคนและสถานที่</p>';
+                studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่พบข้อมูล "โปรไฟล์นักเรียน | portfolio"</p>';
+                if(totalStudentDisplay) totalStudentDisplay.textContent = '';
                 return;
             }
 
             const studentDataBySchool = d3.rollup(studentPortfolioData,
                 v => d3.sum(v, d => d.numPeople),
-                d => d.location // Assuming location is school
+                d => d.location 
             );
             const processedData = Array.from(studentDataBySchool, ([key, value]) => ({ school: key, count: value }))
                                         .filter(d => d.count > 0);
             
             if (processedData.length === 0) {
                 studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลจำนวนนักเรียนที่มากกว่า 0</p>';
+                if(totalStudentDisplay) totalStudentDisplay.textContent = '';
                 return;
             }
+            
+            const totalStudentsSum = processedData.reduce((sum, item) => sum + item.count, 0);
+            if(totalStudentDisplay) totalStudentDisplay.textContent = `จำนวนนักเรียนทั้งหมด: ${totalStudentsSum.toLocaleString()} คน`;
 
 
             const width = 300, height = 250, margin = 10;
@@ -1309,11 +1349,11 @@
                 .append("g")
                 .attr("transform", `translate(${width / 2},${height / 2})`);
 
-            const color = d3.scaleOrdinal(d3.schemePastel2); // Different color scheme
-            const pie = d3.pie().value(d => d.count);
+            const color = d3.scaleOrdinal(d3.schemePastel2); 
+            const pie = d3.pie().value(d => d.count).sort(null);
             const data_ready = pie(processedData);
 
-            const arc = d3.arc().innerRadius(radius * 0.5).outerRadius(radius); // For donut
+            const arc = d3.arc().innerRadius(radius * 0.5).outerRadius(radius); 
 
             svg.selectAll('slices')
                 .data(data_ready)
@@ -1328,12 +1368,124 @@
                     tooltip.html(`${d.data.school}<br/>จำนวน: ${d.data.count} คน`)
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
-                    d3.select(this).style("opacity", 1);
+                    d3.select(this).style("opacity", 1).style("stroke-width", "3px");
                 })
                 .on("mouseout", function(d) {
                     tooltip.transition().duration(500).style("opacity", 0);
-                    d3.select(this).style("opacity", 0.8);
+                    d3.select(this).style("opacity", 0.8).style("stroke-width", "2px");
                 });
+        }
+
+        function renderStudentBySchoolBarChart(data) {
+            d3.select("#studentBarChartContainer svg").remove();
+            if (!data || data.length === 0) {
+                studentBarChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลนักเรียนสำหรับสร้างกราฟแท่ง</p>';
+                return;
+            }
+
+            const studentPortfolioData = data.filter(d => d.typeOfWork === "โปรไฟล์นักเรียน | portfolio" && d.location && d.numPeople > 0);
+            if (studentPortfolioData.length === 0) {
+                studentBarChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่พบข้อมูล "โปรไฟล์นักเรียน | portfolio" สำหรับกราฟแท่ง</p>';
+                return;
+            }
+
+            const studentDataBySchool = d3.rollup(studentPortfolioData,
+                v => d3.sum(v, d => d.numPeople),
+                d => d.location
+            );
+            const processedData = Array.from(studentDataBySchool, ([key, value]) => ({ school: key, count: value }))
+                                        .filter(d => d.count > 0)
+                                        .sort((a, b) => b.count - a.count); 
+
+            if (processedData.length === 0) {
+                studentBarChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลจำนวนนักเรียนที่มากกว่า 0 สำหรับกราฟแท่ง</p>';
+                return;
+            }
+            
+            const containerWidth = studentBarChartContainer.clientWidth || 600; 
+            const barHeight = 25;
+            const margin = { top: 20, right: 30, bottom: 40, left: 150 }; 
+            const height = Math.max(200, processedData.length * (barHeight + 5) + margin.top + margin.bottom); 
+            const width = containerWidth - margin.left - margin.right;
+
+
+            const svg = d3.select("#studentBarChartContainer")
+                .append("svg")
+                .attr("width", containerWidth)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scaleLinear()
+                .domain([0, d3.max(processedData, d => d.count)])
+                .range([0, width]);
+
+            const y = d3.scaleBand()
+                .domain(processedData.map(d => d.school))
+                .range([0, height - margin.top - margin.bottom])
+                .padding(0.1);
+
+            svg.append("g")
+                .call(d3.axisLeft(y).tickSize(0).tickPadding(10))
+                .selectAll("text")
+                .style("font-size", "10px");
+
+
+            svg.append("g")
+                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+                .call(d3.axisBottom(x).ticks(Math.min(5, d3.max(processedData, d => d.count))).tickFormat(d3.format("d"))) 
+                .selectAll("text")
+                .style("font-size", "10px");
+
+            const color = d3.scaleOrdinal(d3.schemeTableau10);
+
+            svg.selectAll(".bar")
+                .data(processedData)
+                .join("rect")
+                .attr("class", "bar")
+                .attr("y", d => y(d.school))
+                .attr("x", 0)
+                .attr("width", d => x(d.count))
+                .attr("height", y.bandwidth())
+                .attr("fill", (d,i) => color(i))
+                .attr("rx", 4) 
+                .attr("ry", 4) 
+                .on("mouseover", function(event, d) {
+                    tooltip.transition().duration(200).style("opacity", .9);
+                    tooltip.html(`${d.school}<br/>จำนวน: ${d.count} คน`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                    d3.select(this).style("opacity", 0.7);
+                })
+                .on("mouseout", function(d) {
+                    tooltip.transition().duration(500).style("opacity", 0);
+                    d3.select(this).style("opacity", 1);
+                });
+            
+            svg.selectAll(".bar-label-text")
+                .data(processedData)
+                .join("text")
+                .attr("class", "bar-label")
+                .attr("x", d => {
+                    const barWidth = x(d.count);
+                    const textWidth = this.getComputedTextLength ? this.getComputedTextLength() : (d.school.length + String(d.count).length + 3) * 5; // Estimate
+                    return barWidth > textWidth + 10 ? barWidth / 2 : barWidth + 5; // Position inside or outside
+                })
+                .attr("y", d => y(d.school) + y.bandwidth() / 2)
+                .text(d => `${d.school} (${d.count})`)
+                .style("font-size", "10px")
+                .style("fill", d => {
+                    const barWidth = x(d.count);
+                     const textWidth = this.getComputedTextLength ? this.getComputedTextLength() : (d.school.length + String(d.count).length + 3) * 5; // Estimate
+                    return barWidth > textWidth + 10 ? "white" : "#333"; // White if inside, dark if outside
+                })
+                .style("text-anchor", d => {
+                    const barWidth = x(d.count);
+                    const textWidth = this.getComputedTextLength ? this.getComputedTextLength() : (d.school.length + String(d.count).length + 3) * 5; // Estimate
+                    return barWidth > textWidth + 10 ? "middle" : "start";
+                })
+                .style("dominant-baseline", "central")
+                .style("pointer-events", "none"); 
         }
 
 
