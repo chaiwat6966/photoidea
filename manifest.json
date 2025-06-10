@@ -1,0 +1,21 @@
+{
+  "name": "Idea Photo รับถ่ายภาพ",
+  "short_name": "Idea Photo",
+  "description": "เว็บแอปพลิเคชันสำหรับจองคิวถ่ายภาพ Idea Photo",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#A7D7C5",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/Fsmmtcfp/Copilot-20250610-175021.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.postimg.cc/Fsmmtcfp/Copilot-20250610-175021.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
