@@ -477,6 +477,7 @@
             <div class="px-4 pb-4 space-y-1 text-xs">
                 <p class="font-semibold text-gray-700">หมายเหตุ:</p>
                 <ol class="list-decimal list-inside text-gray-600">
+                    <li>ถ่ายไม่จำกัดจำนวน ปรับแต่งโทนสี ความสว่างตามความเหมาะสมให้ทุกภาพ (ไม่รีทัช)</li>
                     <li>ส่งงานทาง Google Drive หรือ Line ภายใน 1-20 วัน</li>
                     <li>ลูกค้าเลื่อนวัน/เปลี่ยนสถานที่ แจ้งล่วงหน้า 7 วัน</li>
                 </ol>
@@ -836,9 +837,13 @@
             const startingDayOfWeek = firstDayOfMonth.getDay(); 
 
             const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
-            dayNames.forEach(name => {
+            dayNames.forEach((name, index) => {
                 const headerCell = document.createElement('div');
-                headerCell.className = 'text-center font-bold p-1.5 text-xs sm:p-2 sm:text-sm bg-gray-200 rounded-md';
+                let classes = 'text-center font-bold p-1.5 text-xs sm:p-2 sm:text-sm bg-gray-200 rounded-md';
+                if (index === 0 || index === 6) { // 0 = Sunday, 6 = Saturday
+                    classes += ' text-orange-600';
+                }
+                headerCell.className = classes;
                 headerCell.textContent = name;
                 calendarView.appendChild(headerCell);
             });
@@ -853,7 +858,14 @@
                 const dayCell = document.createElement('div');
                 dayCell.className = 'border border-gray-200 rounded-md p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] bg-white flex flex-col items-start';
                 const dayNumber = document.createElement('div');
-                dayNumber.className = 'text-xs sm:text-sm font-bold mb-1';
+                
+                let dayNumberClasses = 'text-xs sm:text-sm font-bold mb-1';
+                const currentDayOfWeek = new Date(year, month, day).getDay(); 
+                if (currentDayOfWeek === 0 || currentDayOfWeek === 6) {
+                    dayNumberClasses += ' text-orange-600';
+                }
+                dayNumber.className = dayNumberClasses;
+
                 dayNumber.textContent = day;
                 dayCell.appendChild(dayNumber);
 
