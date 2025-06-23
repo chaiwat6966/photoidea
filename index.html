@@ -107,20 +107,6 @@
         .modal-content::-webkit-scrollbar-thumb, .modal-content-lg::-webkit-scrollbar-thumb { background: #A7D7C5; border-radius: 10px; }
         .modal-content::-webkit-scrollbar-thumb:hover, .modal-content-lg::-webkit-scrollbar-thumb:hover { background: #8dbfad; }
         
-        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .calendar-header { text-align: center; font-weight: bold; padding: 10px; background-color: #E5E7EB; border-radius: 6px; }
-        .calendar-day {
-            padding: 10px; border: 1px solid #D1D5DB; border-radius: 6px;
-            min-height: 80px; background-color: white; position: relative;
-            display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
-        }
-        .calendar-day.other-month { background-color: #f9fafb; color: #9ca3af; }
-        .calendar-day-number { font-size: 0.875rem; font-weight: bold; margin-bottom: 4px; }
-        .calendar-event {
-            font-size: 0.75rem; padding: 2px 4px; margin-top: 2px;
-            background-color: #A7D7C5; color: white; border-radius: 4px;
-            cursor: pointer; width: 100%; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-        }
         .dashboard-metric-card {
             background-color: #E0F2F7; 
             padding: 15px;
@@ -294,7 +280,7 @@
                     <h3 id="calendarMonthYear" class="text-lg font-semibold"></h3>
                     <button id="nextMonthBtn" class="k-minimal-button text-sm">เดือนถัดไป</button>
                 </div>
-                <div id="calendarView" class="calendar">
+                <div id="calendarView" class="grid grid-cols-7 gap-1 sm:gap-2">
                 </div>
                 <div id="calendarMonthlySummary" class="text-center mt-4 text-gray-700 font-semibold">
                 </div>
@@ -852,22 +838,22 @@
             const dayNames = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
             dayNames.forEach(name => {
                 const headerCell = document.createElement('div');
-                headerCell.className = 'calendar-header';
+                headerCell.className = 'text-center font-bold p-1.5 text-xs sm:p-2 sm:text-sm bg-gray-200 rounded-md';
                 headerCell.textContent = name;
                 calendarView.appendChild(headerCell);
             });
 
             for (let i = 0; i < startingDayOfWeek; i++) {
                 const emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-day other-month';
+                emptyCell.className = 'border border-gray-200 rounded-md bg-gray-50';
                 calendarView.appendChild(emptyCell);
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayCell = document.createElement('div');
-                dayCell.className = 'calendar-day';
+                dayCell.className = 'border border-gray-200 rounded-md p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] bg-white flex flex-col items-start';
                 const dayNumber = document.createElement('div');
-                dayNumber.className = 'calendar-day-number';
+                dayNumber.className = 'text-xs sm:text-sm font-bold mb-1';
                 dayNumber.textContent = day;
                 dayCell.appendChild(dayNumber);
 
@@ -881,8 +867,8 @@
 
                 bookingsOnThisDay.forEach(booking => {
                     const eventChip = document.createElement('div');
-                    eventChip.className = 'calendar-event';
-                    eventChip.textContent = `${(booking.typeOfWork || 'N/A').substring(0,10)}... (${(booking.clientName || 'N/A').substring(0,5)}...)`;
+                    eventChip.className = 'text-[8px] sm:text-xs p-1 mt-1 bg-green-400 text-white rounded-md cursor-pointer w-full text-left overflow-hidden text-ellipsis whitespace-nowrap';
+                    eventChip.textContent = `${(booking.typeOfWork || 'N/A').substring(0,10)}...`;
                     eventChip.title = `${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}`;
                     eventChip.onclick = (e) => {
                         e.stopPropagation(); 
