@@ -125,6 +125,7 @@
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
         }
         .chart-container svg {
             display: block;
@@ -173,7 +174,6 @@
             <div class="flex flex-col items-center md:items-start mb-4 md:mb-0">
                 <img src="https://img2.pic.in.th/pic/292496243_201571512196455_2042800695521020042_n.md.png" alt="Idea Photo Logo" style="width: 150px;" class="mb-2">
                 <h1 class="text-2xl font-semibold text-gray-700">Idea Photo รับถ่ายภาพ</h1>
-                <p class="text-sm text-gray-500">by ครูชัย</p>
             </div>
             <nav class="flex space-x-2">
                 <button id="navHome" class="nav-button active">หน้าหลัก</button>
@@ -324,13 +324,25 @@
                     </button>
                 </div>
 
-                <h3 class="text-lg font-semibold mb-3 text-gray-700 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    ภาพรวม Dashboard
-                </h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-gray-600">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        ภาพรวม Dashboard
+                    </h3>
+                    <div class="flex items-baseline space-x-2">
+                        <label for="dashboardDateFilter" class="text-sm font-medium text-gray-600">แสดงข้อมูลสำหรับ:</label>
+                        <select id="dashboardDateFilter" class="k-minimal-select text-sm w-auto">
+                            <option value="all">ทั้งหมด</option>
+                            <option value="this_month">เดือนนี้</option>
+                            <option value="last_month">เดือนที่แล้ว</option>
+                            <option value="this_quarter">ไตรมาสนี้</option>
+                            <option value="this_year">ปีนี้</option>
+                        </select>
+                    </div>
+                </div>
                 
                 <div id="summaryRevenueClickable" class="p-4 bg-blue-100 rounded-lg shadow mb-6 cursor-pointer hover:bg-blue-200 transition">
                     <h3 class="font-semibold text-blue-700 mb-2 text-lg flex items-center">
@@ -602,6 +614,7 @@
         const sortOrderAdminSelect = document.getElementById('sortOrderAdmin');
         const calendarMonthlySummaryEl = document.getElementById('calendarMonthlySummary');
         const tooltip = d3.select(".tooltip");
+        const dashboardDateFilter = document.getElementById('dashboardDateFilter');
 
 
         let allBookingsData = []; 
@@ -728,7 +741,7 @@
                     renderCalendar(); 
                     if (isAdminLoggedIn) {
                         renderAdminBookingList();
-                        renderAdminDashboards();
+                        renderAdminDashboards(allBookingsData);
                         populateRevenueFilterDropdowns(); 
                     }
                 } else {
@@ -859,11 +872,16 @@
                 dayCell.className = 'border border-gray-200 rounded-md p-1 sm:p-2 min-h-[60px] sm:min-h-[80px] bg-white flex flex-col items-start';
                 const dayNumber = document.createElement('div');
                 
-                let dayNumberClasses = 'text-xs sm:text-sm font-bold mb-1';
+                let dayNumberClasses = 'text-xs sm:text-sm font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full';
                 const currentDayOfWeek = new Date(year, month, day).getDay(); 
                 if (currentDayOfWeek === 0 || currentDayOfWeek === 6) {
                     dayNumberClasses += ' text-orange-600';
                 }
+                const today = new Date();
+                if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                     dayNumberClasses += ' bg-orange-100 text-orange-700';
+                }
+
                 dayNumber.className = dayNumberClasses;
 
                 dayNumber.textContent = day;
@@ -900,7 +918,7 @@
             const totalBookingsThisMonth = bookingsInCurrentMonth.length;
 
             if (calendarMonthlySummaryEl) {
-                calendarMonthlySummaryEl.textContent = `จำนวนงานในเดือนนี้: ${totalBookingsThisMonth} งาน`;
+                calendarMonthlySummaryEl.innerHTML = `จำนวนงานในเดือนนี้: <span class="bg-[#A7D7C5] text-white font-bold rounded-full px-2.5 py-1 text-sm inline-flex items-center justify-center">${totalBookingsThisMonth}</span> งาน`;
             }
         }
 
@@ -1087,9 +1105,49 @@
             });
         }
 
-        function renderAdminDashboards() {
-            if (!isAdminLoggedIn || !allBookingsData || allBookingsData.length === 0) {
-                 jobTypeDashboardsContainer.innerHTML = '<p class="text-red-500 col-span-full">ไม่มีข้อมูลสำหรับแสดงผล Dashboard</p>';
+        dashboardDateFilter.addEventListener('change', (event) => {
+            const filterValue = event.target.value;
+            const now = new Date();
+            let filteredData = allBookingsData;
+
+            if (filterValue !== 'all') {
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                
+                let startDate, endDate;
+
+                switch (filterValue) {
+                    case 'this_month':
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+                        break;
+                    case 'last_month':
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                        break;
+                    case 'this_quarter':
+                        const quarter = Math.floor(now.getMonth() / 3);
+                        startDate = new Date(now.getFullYear(), quarter * 3, 1);
+                        endDate = new Date(now.getFullYear(), startDate.getMonth() + 3, 0, 23, 59, 59);
+                        break;
+                    case 'this_year':
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+                        break;
+                }
+                
+                filteredData = allBookingsData.filter(d => {
+                    const bookingDate = new Date(d.startDateTime);
+                    return bookingDate >= startDate && bookingDate <= endDate;
+                });
+            }
+            
+            renderAdminDashboards(filteredData);
+        });
+
+        function renderAdminDashboards(data) {
+            if (!isAdminLoggedIn || !data || data.length === 0) {
+                const message = '<p class="text-red-500 col-span-full">ไม่มีข้อมูลสำหรับช่วงเวลาที่เลือก</p>';
+                 jobTypeDashboardsContainer.innerHTML = message;
                  summaryRevenueOverall.innerHTML = '<p class="text-red-500">ไม่มีข้อมูลรายได้</p>';
                  summaryJobStatusOverall.innerHTML = '<p class="text-red-500">ไม่มีข้อมูลสถานะงาน</p>';
                  if (revenuePieChartContainer) revenuePieChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลสำหรับกราฟรายได้</p>';
@@ -1102,10 +1160,10 @@
             
             jobTypeDashboardsContainer.innerHTML = ''; 
 
-            const jobTypes = [...new Set(allBookingsData.map(b => b.typeOfWork).filter(Boolean))];
+            const jobTypes = [...new Set(data.map(b => b.typeOfWork).filter(Boolean))];
 
             jobTypes.forEach(type => {
-                const typeBookings = allBookingsData.filter(b => b.typeOfWork === type);
+                const typeBookings = data.filter(b => b.typeOfWork === type);
                 const totalCount = typeBookings.length;
                 const notDone = typeBookings.filter(b => b.workStatus === 'ยังไม่ทำ' || !b.workStatus).length;
                 const inProgress = typeBookings.filter(b => b.workStatus === 'กำลังทำรูป').length;
@@ -1126,9 +1184,9 @@
                  jobTypeDashboardsContainer.innerHTML = '<p class="text-gray-500 col-span-full">ยังไม่มีประเภทงานที่บันทึกไว้</p>';
             }
 
-            const totalRevenue = allBookingsData.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
-            const totalDeposit = allBookingsData.reduce((sum, b) => sum + (parseFloat(b.deposit) || 0), 0);
-            const paidRevenue = allBookingsData
+            const totalRevenue = data.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+            const totalDeposit = data.reduce((sum, b) => sum + (parseFloat(b.deposit) || 0), 0);
+            const paidRevenue = data
                 .filter(b => b.paymentStatus === 'ชำระครบแล้ว')
                 .reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
             const outstandingRevenue = totalRevenue - paidRevenue; 
@@ -1140,10 +1198,10 @@
                 <p class="text-sm">รวมเงินมัดจำ: ${totalDeposit.toLocaleString()} บาท</p>
             `;
 
-            const overallNotDone = allBookingsData.filter(b => b.workStatus === 'ยังไม่ทำ' || !b.workStatus).length;
-            const overallInProgress = allBookingsData.filter(b => b.workStatus === 'กำลังทำรูป').length;
-            const overallDone = allBookingsData.filter(b => b.workStatus === 'ส่งงานแล้ว').length;
-            const overallTotalJobs = allBookingsData.length;
+            const overallNotDone = data.filter(b => b.workStatus === 'ยังไม่ทำ' || !b.workStatus).length;
+            const overallInProgress = data.filter(b => b.workStatus === 'กำลังทำรูป').length;
+            const overallDone = data.filter(b => b.workStatus === 'ส่งงานแล้ว').length;
+            const overallTotalJobs = data.length;
 
             summaryJobStatusOverall.innerHTML = `
                 <p class="text-sm">งานทั้งหมด: <strong>${overallTotalJobs}</strong></p>
@@ -1152,9 +1210,9 @@
                 <p><span class="status-green">ส่งงานแล้ว:</span> ${overallDone}</p>
             `;
 
-            renderRevenuePieChart(allBookingsData);
-            renderStudentBySchoolDonutChart(allBookingsData);
-            renderStudentBySchoolBarChart(allBookingsData);
+            renderRevenuePieChart(data);
+            renderStudentBySchoolDonutChart(data);
+            renderStudentBySchoolBarChart(data);
         }
 
         summaryRevenueClickable.addEventListener('click', () => {
@@ -1303,7 +1361,7 @@
                 .append("g")
                 .attr("transform", `translate(${width / 2},${height / 2})`);
 
-            const color = d3.scaleOrdinal(d3.schemePastel1);
+            const color = d3.scaleOrdinal(d3.schemeTableau10); 
             const pie = d3.pie().value(d => d.revenue).sort(null); 
             const data_ready = pie(processedData);
 
@@ -1316,22 +1374,22 @@
                 .attr('fill', d => color(d.data.type))
                 .attr("stroke", "white")
                 .style("stroke-width", "2px")
-                .style("opacity", 0.8)
+                .style("opacity", 0.9)
                 .on("mouseover", function(event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html(`${d.data.type}<br/>รายได้: ${d.data.revenue.toLocaleString()} บาท`)
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
-                    d3.select(this).style("opacity", 1).style("stroke-width", "3px");
+                    d3.select(this).style("opacity", 1).style("stroke", "#000").style("stroke-width", "1.5px");
                 })
                 .on("mouseout", function(d) {
                     tooltip.transition().duration(500).style("opacity", 0);
-                    d3.select(this).style("opacity", 0.8).style("stroke-width", "2px");
+                    d3.select(this).style("opacity", 0.9).style("stroke", "white").style("stroke-width", "2px");
                 });
         }
 
         function renderStudentBySchoolDonutChart(data) {
-            d3.select("#studentDonutChartContainer svg").remove(); 
+            d3.select("#studentDonutChartContainer").html(""); 
             if (!data || data.length === 0) {
                  studentDonutChartContainer.innerHTML = '<p class="text-center text-gray-500">ไม่มีข้อมูลนักเรียนสำหรับสร้างกราฟ</p>';
                  if(totalStudentDisplay) totalStudentDisplay.textContent = '';
@@ -1362,18 +1420,20 @@
             const totalStudentsSum = processedData.reduce((sum, item) => sum + item.count, 0);
             if(totalStudentDisplay) totalStudentDisplay.textContent = `จำนวนนักเรียนทั้งหมด: ${totalStudentsSum.toLocaleString()} คน`;
 
-
+            const container = d3.select("#studentDonutChartContainer");
             const width = 300, height = 250, margin = 10;
-            const radius = Math.min(width, height) / 2 - margin;
+            const legendWidth = 120; 
+            const chartWidth = width - legendWidth;
+            const radius = Math.min(chartWidth, height) / 2 - margin;
 
-            const svg = d3.select("#studentDonutChartContainer")
+            const svg = container
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height)
                 .append("g")
-                .attr("transform", `translate(${width / 2},${height / 2})`);
+                .attr("transform", `translate(${chartWidth / 2},${height / 2})`);
 
-            const color = d3.scaleOrdinal(d3.schemePastel2); 
+            const color = d3.scaleOrdinal(["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd"]); 
             const pie = d3.pie().value(d => d.count).sort(null);
             const data_ready = pie(processedData);
 
@@ -1386,18 +1446,42 @@
                 .attr('fill', d => color(d.data.school))
                 .attr("stroke", "white")
                 .style("stroke-width", "2px")
-                .style("opacity", 0.8)
+                .style("opacity", 0.9)
                  .on("mouseover", function(event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html(`${d.data.school}<br/>จำนวน: ${d.data.count} คน`)
                         .style("left", (event.pageX + 5) + "px")
                         .style("top", (event.pageY - 28) + "px");
-                    d3.select(this).style("opacity", 1).style("stroke-width", "3px");
+                    d3.select(this).style("opacity", 1).style("stroke", "#000").style("stroke-width", "1.5px");
                 })
                 .on("mouseout", function(d) {
                     tooltip.transition().duration(500).style("opacity", 0);
-                    d3.select(this).style("opacity", 0.8).style("stroke-width", "2px");
+                    d3.select(this).style("opacity", 0.9).style("stroke", "white").style("stroke-width", "2px");
                 });
+
+             // Add Legend
+            const legend = d3.select("#studentDonutChartContainer").select("svg")
+                .append("g")
+                .attr("transform", `translate(${chartWidth + 15}, ${20})`);
+            
+            const legendItems = legend.selectAll(".legend-item")
+                .data(processedData)
+                .enter()
+                .append("g")
+                .attr("class", "legend-item")
+                .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+
+            legendItems.append("rect")
+                .attr("width", 12)
+                .attr("height", 12)
+                .attr("fill", d => color(d.school));
+
+            legendItems.append("text")
+                .attr("x", 18)
+                .attr("y", 9)
+                .attr("dy", "0.1em")
+                .text(d => d.school)
+                .style("font-size", d => (d.school.length > 12 ? "8px" : "10px"));
         }
 
         function renderStudentBySchoolBarChart(data) {
