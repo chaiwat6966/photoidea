@@ -792,7 +792,7 @@
             
             const count = upcoming.length;
             if(upcomingEventsCount) {
-                upcomingEventsCount.innerHTML = `(<span class="bg-orange-100 text-orange-700 font-bold rounded-md px-2 py-0.5 text-xs inline-flex items-center">${count}</span> คิว)`;
+                upcomingEventsCount.innerHTML = `(<span class="font-bold text-orange-600">${count}</span> คิว)`;
             }
 
             const upcomingToShow = upcoming.slice(0, 20); 
@@ -802,6 +802,14 @@
                 upcomingEventsList.innerHTML = '<p class="text-gray-500">ไม่มีคิวงานที่กำลังจะมาถึง</p>';
                 return;
             }
+            
+            const uniqueDates = [...new Set(upcoming.map(b => b.startDateTime.toDateString()))];
+            const colorScale = d3.scaleOrdinal(["#10B981", "#3B82F6", "#EC4899", "#F59E0B", "#8B5CF6", "#6366F1", "#D946EF"]);
+            const dateColorMap = {};
+            uniqueDates.forEach((date, i) => {
+                dateColorMap[date] = colorScale(i % colorScale.range().length);
+            });
+
             upcomingToShow.forEach(booking => {
                 const eventDiv = document.createElement('div');
                 eventDiv.className = 'p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer';
@@ -816,10 +824,13 @@
                     `;
                 }
 
+                const eventDateString = booking.startDateTime.toDateString();
+                const headerColor = dateColorMap[eventDateString];
+
                 eventDiv.innerHTML = `
                     <div class="flex justify-between items-center">
                         <div class="flex-grow">
-                            <h4 class="font-semibold text-green-600">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                            <h4 class="font-semibold" style="color: ${headerColor};">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
                             <p class="text-sm text-gray-600">วันที่: ${formatDate(booking.startDateTime)}</p>
                             <p class="text-sm text-gray-500">สถานที่: ${booking.location || 'N/A'}</p>
                         </div>
