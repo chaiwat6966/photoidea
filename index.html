@@ -615,6 +615,8 @@
         const calendarMonthlySummaryEl = document.getElementById('calendarMonthlySummary');
         const tooltip = d3.select(".tooltip");
         const dashboardDateFilter = document.getElementById('dashboardDateFilter');
+        const startDateTimeInput = document.getElementById('startDateTime');
+        const endDateTimeInput = document.getElementById('endDateTime');
 
 
         let allBookingsData = []; 
@@ -817,8 +819,8 @@
                 let numPeopleHTML = '';
                 if(booking.numPeople && booking.numPeople > 0) {
                     numPeopleHTML = `
-                        <div class="ml-4 flex-shrink-0 bg-orange-50 rounded-lg p-2 flex flex-col items-center justify-center w-16 h-16">
-                            <p class="text-3xl font-bold text-orange-500">${booking.numPeople}</p>
+                        <div class="ml-4 flex-shrink-0 bg-orange-50 rounded-lg p-1 flex flex-col items-center justify-center" style="width: 56px; height: 56px;">
+                            <p class="text-2xl font-bold text-orange-500">${booking.numPeople}</p>
                             <p class="text-xs text-gray-500 -mt-1">คน</p>
                         </div>
                     `;
@@ -829,8 +831,8 @@
 
                 eventDiv.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <div class="flex-grow">
-                            <h4 class="font-semibold" style="color: ${headerColor};">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                        <div class="flex-grow min-w-0">
+                            <h4 class="font-semibold text-white rounded-md px-2 py-1 mb-2 truncate" style="background-color: ${headerColor};" title="${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
                             <p class="text-sm text-gray-600">วันที่: ${formatDate(booking.startDateTime)}</p>
                             <p class="text-sm text-gray-500">สถานที่: ${booking.location || 'N/A'}</p>
                         </div>
@@ -1637,6 +1639,28 @@
             }
         });
 
+        // --- Auto-set End Date from Start Date ---
+        if (startDateTimeInput && endDateTimeInput) {
+            startDateTimeInput.addEventListener('change', function() {
+                const startDateValue = this.value;
+                if (startDateValue) {
+                    try {
+                        const startDate = new Date(startDateValue);
+                        const endDate = new Date(startDate.getTime() + (1 * 60 * 60 * 1000)); // Add 1 hour
+                        const timezoneOffset = endDate.getTimezoneOffset() * 60000;
+                        const localISOTime = new Date(endDate.getTime() - timezoneOffset).toISOString().slice(0, 16);
+                        endDateTimeInput.value = localISOTime;
+                    } catch (e) {
+                        console.error("Invalid start date format:", e);
+                        endDateTimeInput.value = '';
+                    }
+                } else {
+                    endDateTimeInput.value = '';
+                }
+            });
+        }
+
+        // --- Initial Load ---
         showPage('homePage');
         fetchBookings();
         renderCalendar(); 
