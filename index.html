@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         body {
             font-family: 'Prompt', sans-serif;
@@ -77,6 +78,7 @@
             background-color: rgba(0,0,0,0.5); display: flex;
             align-items: center; justify-content: center; z-index: 1000;
             opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+            overflow-y: auto; 
         }
         .modal.active { opacity: 1; visibility: visible; }
         
@@ -84,16 +86,14 @@
             background-color: white; 
             border-radius: 12px; 
             width: 90%; max-width: 600px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
+            margin: 2rem 0; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         .modal-content-lg { 
             background-color: white; 
             border-radius: 12px; 
             width: 90%; max-width: 800px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
+            margin: 2rem 0;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
@@ -102,11 +102,6 @@
             color: white;
         }
 
-        .modal-content::-webkit-scrollbar, .modal-content-lg::-webkit-scrollbar { width: 8px; }
-        .modal-content::-webkit-scrollbar-track, .modal-content-lg::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .modal-content::-webkit-scrollbar-thumb, .modal-content-lg::-webkit-scrollbar-thumb { background: #A7D7C5; border-radius: 10px; }
-        .modal-content::-webkit-scrollbar-thumb:hover, .modal-content-lg::-webkit-scrollbar-thumb:hover { background: #8dbfad; }
-        
         .dashboard-metric-card {
             background-color: #E0F2F7; 
             padding: 15px;
@@ -474,15 +469,23 @@
     <div id="bookingDetailModal" class="modal">
         <div class="modal-content">
             <div id="modalHeaderRow" class="modal-header-custom flex justify-between items-center p-4 rounded-t-lg">
-                <div class="flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-md mr-3 text-white">
+                <div class="flex items-center min-w-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-md mr-3 text-white flex-shrink-0">
                       <path d="M4 4h3l2-2h6l2 2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm10 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm-0-8a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
                       <circle cx="18.5" cy="7.5" r="1.5"/>
                     </svg>
-                    <h3 id="modalTitle" class="text-xl font-semibold text-white"></h3>
+                    <h3 id="modalTitle" class="text-xl font-semibold text-white truncate"></h3>
                 </div>
-                <button id="closeModalBtnStandard" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                <div id="modal-actions" class="flex items-center space-x-2">
+                    <button id="saveModalBtn" title="บันทึกเป็นรูปภาพ" class="text-white hover:text-gray-200">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="icon-md" viewBox="0 0 20 20" fill="currentColor">
+                           <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                       </svg>
+                    </button>
+                    <button id="closeModalBtnStandard" class="text-white hover:text-gray-200 text-2xl font-bold">&times;</button>
+                </div>
             </div>
+            
             <div id="modalBodyStandard" class="space-y-3 text-sm p-4">
             </div>
             <hr class="border-dashed border-gray-300 mx-4 my-2">
@@ -494,6 +497,7 @@
                     <li>ลูกค้าเลื่อนวัน/เปลี่ยนสถานที่ แจ้งล่วงหน้า 7 วัน</li>
                 </ol>
             </div>
+            
         </div>
     </div>
 
@@ -597,6 +601,7 @@
         const modalTitle = document.getElementById('modalTitle'); 
         const modalBodyStandard = document.getElementById('modalBodyStandard'); 
         const closeModalBtnStandard = document.getElementById('closeModalBtnStandard');
+        const saveModalBtn = document.getElementById('saveModalBtn');
 
         const revenueDetailModal = document.getElementById('revenueDetailModal');
         const closeRevenueModalBtn = document.getElementById('closeRevenueModalBtn');
@@ -987,6 +992,10 @@
                     <p><strong>สถานะชำระเงิน (Admin):</strong> <span class="${getPaymentStatusClass(booking.paymentStatus)}">${booking.paymentStatus || 'ยังไม่ได้ระบุ'}</span></p>
                 ` : ''}
             `;
+            
+            if (saveModalBtn) {
+                 saveModalBtn.onclick = () => saveModalAsImage(booking);
+            }
             bookingDetailModal.classList.add('active');
         }
 
@@ -998,6 +1007,50 @@
                 bookingDetailModal.classList.remove('active');
             }
         });
+        
+        function saveModalAsImage(booking) {
+            const element = document.getElementById('bookingDetailModal').querySelector('.modal-content');
+            const actionButtons = document.getElementById('modal-actions');
+
+            if (!element) {
+                console.error("Modal element not found for capture.");
+                Swal.fire('ผิดพลาด!', 'ไม่สามารถหาองค์ประกอบสำหรับบันทึกได้', 'error');
+                return;
+            }
+
+            if(actionButtons) actionButtons.style.visibility = 'hidden';
+
+            Swal.fire({
+                title: 'กำลังสร้างรูปภาพ...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            html2canvas(element, {
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                onclone: (document) => {
+                    const clonedElement = document.querySelector('.modal-content');
+                    if (clonedElement) {
+                         clonedElement.style.overflow = 'visible';
+                         clonedElement.style.maxHeight = 'none';
+                    }
+                }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `คิวงาน-${booking.clientName || 'details'}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+                Swal.close();
+                Swal.fire('สำเร็จ!', 'บันทึกรูปภาพเรียบร้อย', 'success');
+            }).catch(err => {
+                console.error('oops, something went wrong!', err);
+                Swal.fire('ผิดพลาด!', 'ไม่สามารถสร้างรูปภาพได้', 'error');
+            }).finally(() => {
+                if(actionButtons) actionButtons.style.visibility = 'visible';
+            });
+        }
 
         adminLoginForm.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -1236,7 +1289,7 @@
                 <p class="text-sm">งานทั้งหมด: <strong>${overallTotalJobs}</strong></p>
                 <p><span class="status-red">ยังไม่ทำ:</span> ${overallNotDone}</p>
                 <p><span class="status-yellow">กำลังทำรูป:</span> ${overallInProgress}</p>
-                <p><span class="status-green">ส่งงานแล้ว:</span> ${overallDone}</p>
+                <p><span class="status-green">ส่งงานแล้ว:</span> ${done}</p>
             `;
 
             renderRevenuePieChart(data);
