@@ -824,9 +824,9 @@
                 let numPeopleHTML = '';
                 if(booking.numPeople && booking.numPeople > 0) {
                     numPeopleHTML = `
-                        <div class="ml-4 flex-shrink-0 bg-orange-50 rounded-lg p-1 flex flex-col items-center justify-center" style="width: 56px; height: 56px;">
-                            <p class="text-2xl font-bold text-orange-500">${booking.numPeople}</p>
-                            <p class="text-xs text-gray-500 -mt-1">คน</p>
+                        <div class="ml-2 text-right flex-shrink-0">
+                            <span class="text-lg font-bold text-orange-500">${booking.numPeople}</span>
+                            <span class="text-sm text-gray-600">คน</span>
                         </div>
                     `;
                 }
@@ -835,13 +835,13 @@
                 const headerColor = dateColorMap[eventDateString];
 
                 eventDiv.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div class="flex-grow min-w-0">
-                            <h4 class="font-semibold text-white rounded-md px-2 py-1 mb-2 truncate" style="background-color: ${headerColor};" title="${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
-                            <p class="text-sm text-gray-600">วันที่: ${formatDate(booking.startDateTime)}</p>
-                            <p class="text-sm text-gray-500">สถานที่: ${booking.location || 'N/A'}</p>
-                        </div>
-                        ${numPeopleHTML}
+                    <h4 class="font-semibold text-white rounded-md px-2 py-1 mb-2 text-sm" style="background-color: ${headerColor}; white-space: normal; word-break: break-word;" title="${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                    <div class="flex justify-between items-start w-full">
+                         <div class="min-w-0">
+                             <p class="text-sm text-gray-600">วันที่: ${formatDate(booking.startDateTime)}</p>
+                             <p class="text-sm text-gray-500">สถานที่: ${booking.location || 'N/A'}</p>
+                         </div>
+                         ${numPeopleHTML}
                     </div>
                 `;
                 eventDiv.onclick = () => showBookingDetails(booking.rowId || booking.id); 
