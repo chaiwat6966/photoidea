@@ -792,6 +792,28 @@
             });
         }
 
+        function getIconForJobType(typeOfWork) {
+            const type = typeOfWork.toLowerCase();
+            let iconSVG = '';
+            
+            if (type.includes('นักเรียน') || type.includes('นักศึกษา') || type.includes('portfolio')) {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0012 11z" clip-rule="evenodd" /></svg>';
+            } else if (type.includes('รับปริญญา')) {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.242 8.44a1 1 0 01.134-1.406l6-4.5a1 1 0 011.248 0l6 4.5a1 1 0 01.134 1.406l-1.579 2.106A.998.998 0 0115 11v2a1 1 0 11-2 0v-1.121l-3.5 2.625-.002.002a1 1 0 01-1 0l-.002-.001-3.5-2.625V13a1 1 0 11-2 0v-2c0-.365.198-.7.508-.886L3.242 8.44z" clip-rule="evenodd" /><path d="M5.508 12.114L10 15.448l4.492-3.333a.998.998 0 011.015.027l.5 1a1 1 0 01-1.028 1.78l-4.5-3.333a1 1 0 00-1.028 0L5 14.921a1 1 0 01-1.028-1.78l.5-1a1 1 0 011.015-.027z" /></svg>';
+            } else if (type.includes('บวช')) {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>';
+            } else if (type.includes('wedding')) {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" /></svg>';
+            } else if (type.includes('ขาว-ดำ')) {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 11a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM10 16a1 1 0 00-1 1v1a1 1 0 102 0v-1a1 1 0 00-1-1z" /></svg>';
+            } else if (type.includes('event')) {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a6 6 0 00-6 6c0 1.887.834 3.565 2.146 4.673A.999.999 0 006.5 14H8v4a1 1 0 102 0v-4h2v4a1 1 0 102 0v-4h1.5a.999.999 0 00.354-1.327A6 6 0 0010 2zm0 10a4 4 0 110-8 4 4 0 010 8z" /></svg>';
+            } else {
+                iconSVG = '<svg xmlns="http://www.w3.org/2000/svg" class="icon-sm" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>';
+            }
+            return iconSVG;
+        }
+
         function renderUpcomingEvents() {
             const now = new Date();
             const upcoming = sortBookings(allBookingsData, 'startDateTimeAsc')
@@ -825,18 +847,23 @@
                 if(booking.numPeople && booking.numPeople > 0) {
                     numPeopleHTML = `
                         <div class="ml-2 text-right flex-shrink-0">
-                            <span class="text-lg font-bold text-orange-500">${booking.numPeople}</span>
-                            <span class="text-sm text-gray-600">คน</span>
+                            <div class="bg-orange-100 rounded-full w-8 h-8 flex items-center justify-center">
+                               <span class="text-md font-bold text-orange-600">${booking.numPeople}</span>
+                            </div>
                         </div>
                     `;
                 }
 
                 const eventDateString = booking.startDateTime.toDateString();
                 const headerColor = dateColorMap[eventDateString];
+                const iconHTML = getIconForJobType(booking.typeOfWork);
 
                 eventDiv.innerHTML = `
-                    <h4 class="font-semibold text-white rounded-md px-2 py-1 mb-2 text-sm" style="background-color: ${headerColor}; white-space: normal; word-break: break-word;" title="${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
-                    <div class="flex justify-between items-start w-full">
+                    <h4 class="font-semibold text-white rounded-md px-2 py-1 mb-2 flex items-center text-sm" style="background-color: ${headerColor}; white-space: normal; word-break: break-word;" title="${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}">
+                        ${iconHTML}
+                        <span class="truncate">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</span>
+                    </h4>
+                    <div class="flex justify-between items-end w-full">
                          <div class="min-w-0">
                              <p class="text-sm text-gray-600">วันที่: ${formatDate(booking.startDateTime)}</p>
                              <p class="text-sm text-gray-500">สถานที่: ${booking.location || 'N/A'}</p>
