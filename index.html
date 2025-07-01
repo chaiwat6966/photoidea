@@ -6,7 +6,7 @@
     <title>Idea Photo รับถ่ายภาพ</title>
 
     <!-- PWA & Mobile App Icon Configuration -->
-    <link rel="icon" type="image/png" href="https://img2.pic.in.th/pic/292496243_201571512196455_2042800695521020042_n.md.png">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/CxrGrdb4/logo-idea-2025.png">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/Fsmmtcfp/Copilot-20250610-175021.png">
     <meta name="theme-color" content="#A7D7C5"/>
@@ -181,7 +181,7 @@
     <main class="container mx-auto p-4">
 
         <div id="homePage">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-stretch">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-start">
                 <section id="bookingFormSection" class="k-minimal-card flex flex-col">
                     <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
                         <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
@@ -251,16 +251,37 @@
                     </form>
                 </section>
 
-                <section id="upcomingEventsSection" class="k-minimal-card flex flex-col">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
-                        <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
-                        คิวงานที่กำลังจะมาถึง 
-                        <span id="upcomingEventsCount" class="ml-2"></span>
-                    </h2>
-                    <div id="upcomingEventsList" class="space-y-3 flex-grow overflow-y-auto">
-                        <p class="text-gray-500">กำลังโหลดข้อมูลคิวงาน...</p>
-                    </div>
-                </section>
+                <div class="flex flex-col gap-6">
+                    <section id="dailySummarySection" class="k-minimal-card">
+                         <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon-md text-blue-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                            </svg>
+                            สรุปรายวัน
+                        </h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-lg text-center bg-gradient-to-b from-green-300 to-white shadow-lg">
+                                <h4 class="text-sm font-medium text-green-800">คิวงานที่ได้รับวันนี้</h4>
+                                <p id="todayBookingsCount" class="text-4xl font-bold text-green-600">0</p>
+                            </div>
+                            <div class="p-4 rounded-lg text-center bg-gradient-to-b from-pink-300 to-white shadow-lg">
+                                <h4 class="text-xs font-medium text-pink-800">คิวงานที่ได้รับเมื่อวาน</h4>
+                                <p id="yesterdayBookingsCount" class="text-4xl font-bold text-pink-600">0</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="upcomingEventsSection" class="k-minimal-card flex flex-col">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+                            <svg class="icon-md text-green-500 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+                            คิวงานที่กำลังจะมาถึง 
+                            <span id="upcomingEventsCount" class="ml-2"></span>
+                        </h2>
+                        <div id="upcomingEventsList" class="space-y-3 flex-grow overflow-y-auto">
+                            <p class="text-gray-500">กำลังโหลดข้อมูลคิวงาน...</p>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
 
@@ -739,6 +760,7 @@
                         numPeople: parseInt(item.numPeople) || 0 
                     })).filter(item => item.typeOfWork); 
 
+                    renderDailySummary();
                     renderUpcomingEvents();
                     renderAllBookingsList(); 
                     renderCalendar(); 
@@ -1735,6 +1757,32 @@
                 }
             });
         }
+
+        function renderDailySummary() {
+            const todayEl = document.getElementById('todayBookingsCount');
+            const yesterdayEl = document.getElementById('yesterdayBookingsCount');
+
+            if (!todayEl || !yesterdayEl) return;
+
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            const todayString = today.toDateString();
+            const yesterdayString = yesterday.toDateString();
+
+            const todayBookings = allBookingsData.filter(b => {
+                return b.bookingDateSystem && b.bookingDateSystem.toDateString() === todayString;
+            }).length;
+
+            const yesterdayBookings = allBookingsData.filter(b => {
+                return b.bookingDateSystem && b.bookingDateSystem.toDateString() === yesterdayString;
+            }).length;
+
+            todayEl.textContent = todayBookings;
+            yesterdayEl.textContent = yesterdayBookings;
+        }
+
 
         // --- Initial Load ---
         showPage('homePage');
