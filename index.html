@@ -260,12 +260,12 @@
                             สรุปรายวัน
                         </h2>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="p-4 rounded-lg text-center bg-gradient-to-b from-green-300 to-white shadow-lg">
+                            <div id="todayBookingsCard" class="p-4 rounded-lg text-center bg-gradient-to-b from-green-300 to-white shadow-lg cursor-pointer">
                                 <h4 class="text-sm font-medium text-green-800">คิวงานที่ได้รับวันนี้</h4>
                                 <p id="todayBookingsCount" class="text-4xl font-bold text-green-600">0</p>
                             </div>
-                            <div class="p-4 rounded-lg text-center bg-gradient-to-b from-pink-300 to-white shadow-lg">
-                                <h4 class="text-xs font-medium text-pink-800">คิวงานที่ได้รับเมื่อวาน</h4>
+                            <div id="yesterdayBookingsCard" class="p-4 rounded-lg text-center bg-gradient-to-b from-pink-300 to-white shadow-lg cursor-pointer">
+                                <h4 class="text-sm font-medium text-pink-800">คิวงานที่ได้รับเมื่อวาน</h4>
                                 <p id="yesterdayBookingsCount" class="text-4xl font-bold text-pink-600">0</p>
                             </div>
                         </div>
@@ -1761,8 +1761,10 @@
         function renderDailySummary() {
             const todayEl = document.getElementById('todayBookingsCount');
             const yesterdayEl = document.getElementById('yesterdayBookingsCount');
+            const todayCard = document.getElementById('todayBookingsCard');
+            const yesterdayCard = document.getElementById('yesterdayBookingsCard');
 
-            if (!todayEl || !yesterdayEl) return;
+            if (!todayEl || !yesterdayEl || !todayCard || !yesterdayCard) return;
 
             const today = new Date();
             const yesterday = new Date();
@@ -1773,14 +1775,39 @@
 
             const todayBookings = allBookingsData.filter(b => {
                 return b.bookingDateSystem && b.bookingDateSystem.toDateString() === todayString;
-            }).length;
+            });
 
             const yesterdayBookings = allBookingsData.filter(b => {
                 return b.bookingDateSystem && b.bookingDateSystem.toDateString() === yesterdayString;
-            }).length;
+            });
 
-            todayEl.textContent = todayBookings;
-            yesterdayEl.textContent = yesterdayBookings;
+            todayEl.textContent = todayBookings.length;
+            yesterdayEl.textContent = yesterdayBookings.length;
+
+            todayCard.onclick = () => showDailyBookingsModal(todayBookings, "คิวงานที่ได้รับวันนี้");
+            yesterdayCard.onclick = () => showDailyBookingsModal(yesterdayBookings, "คิวงานที่ได้รับเมื่อวาน");
+        }
+
+        function showDailyBookingsModal(bookingsToShow, modalTitleText) {
+            modalTitle.textContent = modalTitleText;
+            modalBodyStandard.innerHTML = '';
+
+            if (bookingsToShow.length === 0) {
+                 modalBodyStandard.innerHTML = '<p class="text-gray-500 text-center">ไม่มีคิวงานสำหรับวันนี้</p>';
+            } else {
+                const sorted = sortBookings(bookingsToShow, 'bookingDateDesc');
+                sorted.forEach(booking => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50';
+                    itemDiv.innerHTML = `
+                        <h4 class="font-semibold text-md">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                        <p class="text-sm text-gray-600">เวลาจอง: ${booking.bookingDateSystem.toLocaleTimeString('th-TH')}</p>
+                    `;
+                    itemDiv.onclick = () => showBookingDetails(booking.rowId || booking.id);
+                    modalBodyStandard.appendChild(itemDiv);
+                });
+            }
+            bookingDetailModal.classList.add('active');
         }
 
 
