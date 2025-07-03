@@ -984,17 +984,17 @@
                         contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis pl-4">| ${locationText}</p>
-                                <p class="text-[8px] text-gray-600 pl-4">| ${time}</p>
-                                <p class="text-[9px] text-gray-600 pl-4">| ${booking.numPeople || 0} คน</p>
+                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">| ${locationText}</p>
+                                <p class="text-[8px] text-gray-600">| ${time}</p>
+                                <p class="text-[9px] text-gray-600">| ${booking.numPeople || 0} คน</p>
                             </div>`;
                     } else if (type.includes('งานบวช') || type.includes('wedding') || type.includes('รับปริญญา')) {
                          const locationText = (booking.location || '').replace(/รร\./g, '').trim();
                          contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis pl-4">| ${locationText}</p>
-                                <p class="text-[8px] text-gray-600 pl-4">| ${time}</p>
+                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">| ${locationText}</p>
+                                <p class="text-[8px] text-gray-600">| ${time}</p>
                             </div>`;
                     } else {
                          contentHTML = `
