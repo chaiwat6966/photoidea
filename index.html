@@ -88,6 +88,7 @@
             width: 90%; max-width: 600px; 
             margin: 2rem 0; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
         }
         .modal-content-lg { 
             background-color: white; 
@@ -489,15 +490,16 @@
 
     <div id="bookingDetailModal" class="modal">
         <div class="modal-content">
-            <div id="modalHeaderRow" class="modal-header-custom flex justify-between items-center p-4 rounded-t-lg">
-                <div class="flex items-center min-w-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-md mr-3 text-white flex-shrink-0">
+             <img id="paidStamp" src="https://i.postimg.cc/Y25DGtzn/image.png" alt="Paid Stamp" class="absolute top-1/2 right-4 -translate-y-1/2 w-40 h-40 opacity-70 rotate-12 hidden">
+            <div id="modalHeaderRow" class="modal-header-custom flex justify-between items-start p-4 rounded-t-lg">
+                <div class="flex items-start min-w-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon-md mr-3 text-white flex-shrink-0 mt-1">
                       <path d="M4 4h3l2-2h6l2 2h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm10 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm-0-8a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
                       <circle cx="18.5" cy="7.5" r="1.5"/>
                     </svg>
-                    <h3 id="modalTitle" class="text-xl font-semibold text-white truncate"></h3>
+                    <h3 id="modalTitle" class="text-lg font-semibold text-white" style="word-break: break-word;"></h3>
                 </div>
-                <div id="modal-actions" class="flex items-center space-x-2">
+                <div id="modal-actions" class="flex items-center space-x-2 flex-shrink-0">
                    
                     <button id="closeModalBtnStandard" class="text-white hover:text-gray-200 text-2xl font-bold">&times;</button>
                 </div>
@@ -762,7 +764,6 @@
 
                     renderDailySummary();
                     renderUpcomingEvents();
-                    renderAllBookingsList(); 
                     renderCalendar(); 
                     if (isAdminLoggedIn) {
                         renderAdminBookingList();
@@ -905,12 +906,34 @@
             sortedBookings.forEach(booking => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'p-3 border border-gray-200 rounded-lg hover:shadow-md transition-shadow cursor-pointer';
-                itemDiv.innerHTML = `
-                    <h4 class="font-semibold text-md">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
-                    <p class="text-sm text-gray-600">วันที่เริ่ม: ${formatDate(booking.startDateTime)}</p>
-                    <p class="text-sm text-gray-600">สถานที่: ${booking.location || 'N/A'}</p>
-                    <p class="text-sm text-gray-500">ราคา: ${booking.price ? booking.price.toLocaleString() : '0'} บาท, มัดจำ: ${booking.deposit ? booking.deposit.toLocaleString() : '0'} บาท</p>
-                `;
+
+                if (booking.typeOfWork.toLowerCase().includes('โปรไฟล์นักเรียน') || booking.typeOfWork.toLowerCase().includes('โปรไฟล์นักศึกษา')) {
+                    const iconHTML = getIconForJobType(booking.typeOfWork);
+                    const time = booking.startDateTime ? booking.startDateTime.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.' : 'N/A';
+                    itemDiv.innerHTML = `
+                        <div class="flex items-center justify-between w-full">
+                            <div class="flex items-center min-w-0">
+                                <div class="flex-shrink-0">${iconHTML.replace('icon-sm', 'icon-md')}</div>
+                                <div class="ml-3 min-w-0">
+                                    <h4 class="font-semibold text-md truncate">${booking.clientName || 'N/A'}</h4>
+                                    <p class="text-sm text-gray-500 truncate">${booking.location || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <div class="text-right flex-shrink-0 ml-4">
+                                <p class="text-sm font-semibold text-gray-700">${time}</p>
+                                <p class="text-sm text-gray-500">${booking.numPeople || '0'} คน</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    itemDiv.innerHTML = `
+                        <h4 class="font-semibold text-md">${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}</h4>
+                        <p class="text-sm text-gray-600">วันที่เริ่ม: ${formatDate(booking.startDateTime)}</p>
+                        <p class="text-sm text-gray-600">สถานที่: ${booking.location || 'N/A'}</p>
+                        <p class="text-sm text-gray-500">ราคา: ${booking.price ? booking.price.toLocaleString() : '0'} บาท, มัดจำ: ${booking.deposit ? booking.deposit.toLocaleString() : '0'} บาท</p>
+                    `;
+                }
+
                 itemDiv.onclick = () => showBookingDetails(booking.rowId || booking.id);
                 listContainer.appendChild(itemDiv);
             });
@@ -1018,8 +1041,16 @@
                 return;
             }
 
+            const paidStamp = document.getElementById('paidStamp'); 
             modalTitle.textContent = `คิวงาน: ${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}`;
-            const remainingPayment = (parseFloat(booking.price) || 0) - (parseFloat(booking.deposit) || 0);
+            let remainingPayment;
+            if (booking.paymentStatus === 'ชำระครบแล้ว') {
+                remainingPayment = 0;
+                if(paidStamp) paidStamp.classList.remove('hidden');
+            } else {
+                remainingPayment = (parseFloat(booking.price) || 0) - (parseFloat(booking.deposit) || 0);
+                if(paidStamp) paidStamp.classList.add('hidden');
+            }
 
             modalBodyStandard.innerHTML = `
                 <p><strong>ประเภทงาน:</strong> ${booking.typeOfWork || 'N/A'}</p>
@@ -1030,7 +1061,6 @@
                 <p><strong>ราคา:</strong> ${booking.price ? booking.price.toLocaleString() : '0'} บาท</p>
                 <p><strong>มัดจำแล้ว:</strong> ${booking.deposit ? booking.deposit.toLocaleString() : '0'} บาท</p>
                 <p><strong>คงเหลือ:</strong> <span class="font-bold text-red-600">${remainingPayment.toLocaleString()}</span> บาท</p>
-                <p><strong>ช่องทางการติดต่อ:</strong> ${booking.contactMethod || 'N/A'} - ${booking.contactDetail || 'N/A'}</p>
                 ${isAdminLoggedIn ? `
                     <hr class="my-2 border-gray-200">
                     <p><strong>สถานะงาน (Admin):</strong> <span class="${getWorkStatusClass(booking.workStatus)}">${booking.workStatus || 'ยังไม่ได้ระบุ'}</span></p>
@@ -1038,9 +1068,6 @@
                 ` : ''}
             `;
             
-            if (saveModalBtn) {
-                 saveModalBtn.onclick = () => saveModalAsImage(booking);
-            }
             bookingDetailModal.classList.add('active');
         }
 
@@ -1403,7 +1430,7 @@
             }
 
             jobTypes.forEach(type => {
-                const typeBookings = allBookingsData.filter(b => b.typeOfWork === type);
+                const typeBookings = data.filter(b => b.typeOfWork === type);
                 const typeRevenue = typeBookings.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
                 const typeDeposit = typeBookings.reduce((sum, b) => sum + (parseFloat(b.deposit) || 0), 0);
                 const typePaidFull = typeBookings.filter(b => b.paymentStatus === 'ชำระครบแล้ว').reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
