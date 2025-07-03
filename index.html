@@ -1658,7 +1658,7 @@
                 v => d3.sum(v, d => d.numPeople),
                 d => d.location
             );
-            const processedData = Array.from(studentDataBySchool, ([key, value]) => ({ school: key, count: value }))
+            const processedData = Array.from(studentDataBySchool, ([key, value]) => ({ school: key.replace(/รร\./g, '').trim(), count: value }))
                                         .filter(d => d.count > 0)
                                         .sort((a, b) => b.count - a.count); 
 
@@ -1693,6 +1693,7 @@
             svg.append("g")
                 .call(d3.axisLeft(y).tickSize(0).tickPadding(10))
                 .selectAll("text")
+                .style("font-family", "Prompt, sans-serif")
                 .style("font-size", "10px");
 
 
@@ -1700,6 +1701,7 @@
                 .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
                 .call(d3.axisBottom(x).ticks(Math.min(5, d3.max(processedData, d => d.count))).tickFormat(d3.format("d"))) 
                 .selectAll("text")
+                .style("font-family", "Prompt, sans-serif")
                 .style("font-size", "10px");
 
             const color = d3.scaleOrdinal(d3.schemeTableau10);
