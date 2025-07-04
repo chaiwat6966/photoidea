@@ -984,17 +984,17 @@
                         contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
-                                <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
-                                <p class="text-[9px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>${booking.numPeople || 0}</p>
+                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center pl-4">${locationText}</p>
+                                <p class="text-[8px] text-gray-600 flex items-center pl-4">${time}</p>
+                                <p class="text-[9px] text-gray-600 flex items-center pl-4"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>${booking.numPeople || 0}</p>
                             </div>`;
                     } else if (type.includes('งานบวช') || type.includes('wedding') || type.includes('รับปริญญา')) {
                          const locationText = (booking.location || '').replace(/รร\./g, '').trim();
                          contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
-                                <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
+                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center pl-4"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
+                                <p class="text-[8px] text-gray-600 flex items-center pl-4"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
                             </div>`;
                     } else {
                          contentHTML = `
@@ -1578,14 +1578,18 @@
             if(totalStudentDisplay) totalStudentDisplay.textContent = `จำนวนนักเรียนทั้งหมด: ${totalStudentsSum.toLocaleString()} คน`;
 
             const container = d3.select("#studentDonutChartContainer");
-            const width = 300, height = 250, margin = 10;
-            const legendWidth = 120; 
-            const chartWidth = width - legendWidth;
+            const containerNode = container.node();
+            if (!containerNode) return;
+            const totalWidth = containerNode.getBoundingClientRect().width;
+            const height = Math.min(totalWidth * 0.8, 250);
+            const margin = 10;
+            const legendWidth = totalWidth > 400 ? 120 : 0; // Hide legend on small screens
+            const chartWidth = totalWidth - legendWidth;
             const radius = Math.min(chartWidth, height) / 2 - margin;
 
             const svg = container
                 .append("svg")
-                .attr("width", width)
+                .attr("width", totalWidth)
                 .attr("height", height)
                 .append("g")
                 .attr("transform", `translate(${chartWidth / 2},${height / 2})`);
@@ -1617,28 +1621,30 @@
                 });
 
              // Add Legend
-            const legend = d3.select("#studentDonutChartContainer").select("svg")
-                .append("g")
-                .attr("transform", `translate(${chartWidth + 15}, ${20})`);
-            
-            const legendItems = legend.selectAll(".legend-item")
-                .data(processedData)
-                .enter()
-                .append("g")
-                .attr("class", "legend-item")
-                .attr("transform", (d, i) => `translate(0, ${i * 20})`);
+            if (legendWidth > 0) {
+                const legend = d3.select("#studentDonutChartContainer").select("svg")
+                    .append("g")
+                    .attr("transform", `translate(${chartWidth + 15}, ${20})`);
+                
+                const legendItems = legend.selectAll(".legend-item")
+                    .data(processedData)
+                    .enter()
+                    .append("g")
+                    .attr("class", "legend-item")
+                    .attr("transform", (d, i) => `translate(0, ${i * 20})`);
 
-            legendItems.append("rect")
-                .attr("width", 12)
-                .attr("height", 12)
-                .attr("fill", d => color(d.school));
+                legendItems.append("rect")
+                    .attr("width", 12)
+                    .attr("height", 12)
+                    .attr("fill", d => color(d.school));
 
-            legendItems.append("text")
-                .attr("x", 18)
-                .attr("y", 9)
-                .attr("dy", "0.1em")
-                .text(d => d.school)
-                .style("font-size", d => (d.school.length > 12 ? "8px" : "10px"));
+                legendItems.append("text")
+                    .attr("x", 18)
+                    .attr("y", 9)
+                    .attr("dy", "0.1em")
+                    .text(d => d.school)
+                    .style("font-size", d => (d.school.length > 12 ? "8px" : "10px"));
+            }
         }
 
         function renderStudentBySchoolBarChart(data) {
@@ -1846,11 +1852,31 @@
             bookingDetailModal.classList.add('active');
         }
 
+        function debounce(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                var later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
+        };
 
         // --- Initial Load ---
         showPage('homePage');
         fetchBookings();
         renderCalendar(); 
+
+        window.addEventListener('resize', debounce(function() {
+            if (isAdminLoggedIn && !adminPanelPage.classList.contains('hidden')) {
+                renderAdminDashboards(allBookingsData);
+            }
+        }, 250));
 
     </script>
 </body>
