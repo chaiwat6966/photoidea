@@ -873,10 +873,25 @@
                 
                 let numPeopleHTML = '';
                 if(booking.numPeople && booking.numPeople > 0) {
+                    let depositStatusIcon = '';
+                    let numPeopleBgColor = '';
+                    let numPeopleTextColor = '';
+
+                    if (booking.deposit > 0) {
+                        depositStatusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`;
+                        numPeopleBgColor = 'bg-green-100';
+                        numPeopleTextColor = 'text-green-600';
+                    } else {
+                        depositStatusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`;
+                        numPeopleBgColor = 'bg-red-100';
+                        numPeopleTextColor = 'text-red-600';
+                    }
+
                     numPeopleHTML = `
-                        <div class="ml-2 text-right flex-shrink-0">
-                            <div class="bg-orange-100 rounded-full w-8 h-8 flex items-center justify-center">
-                               <span class="text-md font-bold text-orange-600">${booking.numPeople}</span>
+                        <div class="flex items-center space-x-2 text-right flex-shrink-0">
+                            ${depositStatusIcon}
+                            <div class="rounded-full w-8 h-8 flex items-center justify-center ${numPeopleBgColor}">
+                               <span class="text-md font-bold ${numPeopleTextColor}">${booking.numPeople}</span>
                             </div>
                         </div>
                     `;
