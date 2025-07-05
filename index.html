@@ -656,6 +656,7 @@
         let currentCalendarDate = new Date();
         let currentAdminSortOrder = 'startDateTimeAsc';
         let isAdminLoggedIn = false;
+        let countdownIntervals = [];
 
         function showPage(pageId) {
             [homePage, allBookingsPage, adminLoginPage, adminPanelPage].forEach(page => page.classList.add('hidden'));
@@ -842,7 +843,33 @@
             return iconSVG;
         }
 
+        function startCountdown(booking, element) {
+            const bookingTime = new Date(booking.bookingDateSystem).getTime();
+            const endTime = bookingTime + 72 * 60 * 60 * 1000;
+
+            const intervalId = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = endTime - now;
+
+                if (distance < 0) {
+                    clearInterval(intervalId);
+                    element.innerHTML = '<span class="text-red-500 font-bold">Time\'s Up</span>';
+                    return;
+                }
+
+                const totalHours = Math.floor(distance / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                element.innerHTML = `<span class="text-orange-500">${totalHours}h ${minutes}m ${seconds}s</span>`;
+            }, 1000);
+            countdownIntervals.push(intervalId);
+        }
+
         function renderUpcomingEvents() {
+            countdownIntervals.forEach(clearInterval);
+            countdownIntervals = [];
+
             const now = new Date();
             const upcoming = sortBookings(allBookingsData, 'startDateTimeAsc')
                 .filter(b => b.startDateTime && b.startDateTime >= now);
@@ -874,23 +901,23 @@
                 let numPeopleHTML = '';
                 if(booking.numPeople && booking.numPeople > 0) {
                     let depositStatusIcon = '';
-                    let numPeopleBgColor = '';
+                    let numPeopleBgClass = '';
                     let numPeopleTextColor = '';
 
                     if (booking.deposit > 0) {
                         depositStatusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`;
-                        numPeopleBgColor = 'bg-green-100';
-                        numPeopleTextColor = 'text-green-600';
+                        numPeopleBgClass = 'bg-green-100';
+                        numPeopleTextColor = 'text-green-800';
                     } else {
                         depositStatusIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>`;
-                        numPeopleBgColor = 'bg-red-100';
-                        numPeopleTextColor = 'text-red-600';
+                        numPeopleBgClass = 'bg-red-100';
+                        numPeopleTextColor = 'text-red-800';
                     }
 
                     numPeopleHTML = `
                         <div class="flex items-center space-x-2 text-right flex-shrink-0">
                             ${depositStatusIcon}
-                            <div class="rounded-full w-8 h-8 flex items-center justify-center ${numPeopleBgColor}">
+                            <div class="rounded-full w-8 h-8 flex items-center justify-center ${numPeopleBgClass}">
                                <span class="text-md font-bold ${numPeopleTextColor}">${booking.numPeople}</span>
                             </div>
                         </div>
@@ -900,6 +927,7 @@
                 const eventDateString = booking.startDateTime.toDateString();
                 const headerColor = dateColorMap[eventDateString];
                 const iconHTML = getIconForJobType(booking.typeOfWork);
+                const countdownHTML = booking.deposit === 0 ? `<div id="timer-${booking.rowId || booking.id}" class="text-xs mt-1"></div>` : '';
 
                 eventDiv.innerHTML = `
                     <h4 class="font-semibold text-white rounded-md px-2 py-1 mb-2 flex items-center text-sm" style="background-color: ${headerColor}; white-space: normal; word-break: break-word;" title="${booking.typeOfWork || 'N/A'} - ${booking.clientName || 'N/A'}">
@@ -913,9 +941,14 @@
                          </div>
                          ${numPeopleHTML}
                     </div>
+                    ${countdownHTML}
                 `;
                 eventDiv.onclick = () => showBookingDetails(booking.rowId || booking.id); 
                 upcomingEventsList.appendChild(eventDiv);
+                if (booking.deposit === 0) {
+                    const timerElement = document.getElementById(`timer-${booking.rowId || booking.id}`);
+                    if(timerElement) startCountdown(booking, timerElement);
+                }
             });
         }
         
@@ -1089,8 +1122,7 @@
                 <p><strong>มัดจำแล้ว:</strong> ${booking.deposit ? booking.deposit.toLocaleString() : '0'} บาท</p>
                 <p><strong>คงเหลือ:</strong> <span class="font-bold text-red-600">${remainingPayment.toLocaleString()}</span> บาท</p>
                 <hr class="my-2 border-gray-200">
-                <p><strong>ช่องทางติดต่อ:</strong> ${booking.contactMethod || 'N/A'}</p>
-                <p><strong>รายละเอียดการติดต่อ:</strong> ${booking.contactDetail || 'N/A'}</p>
+                <p><strong>ช่องทางการติดต่อ:</strong> ${booking.contactMethod || 'N/A'}: ${booking.contactDetail || 'N/A'}</p>
                 ${isAdminLoggedIn ? `
                     <hr class="my-2 border-gray-200">
                     <p><strong>สถานะงาน (Admin):</strong> <span class="${getWorkStatusClass(booking.workStatus)}">${booking.workStatus || 'ยังไม่ได้ระบุ'}</span></p>
