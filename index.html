@@ -449,6 +449,7 @@
                                 <th class="p-3 text-left">ลูกค้า</th>
                                 <th class="p-3 text-left">วันที่เริ่ม</th>
                                 <th class="p-3 text-left">ราคา</th>
+                                <th class="p-3 text-left">ค้างชำระ</th>
                                 <th class="p-3 text-left">สถานะงาน</th>
                                 <th class="p-3 text-left">สถานะชำระเงิน</th>
                                 <th class="p-3 text-left">จัดการ</th>
@@ -1041,17 +1042,21 @@
                         contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
-                                <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
-                                <p class="text-[9px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>${booking.numPeople || 0}</p>
+                                <div class="pl-4">
+                                  <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
+                                  <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
+                                  <p class="text-[9px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>${booking.numPeople || 0}</p>
+                                </div>
                             </div>`;
                     } else if (type.includes('งานบวช') || type.includes('wedding') || type.includes('รับปริญญา')) {
                          const locationText = (booking.location || '').replace(/รร\./g, '').trim();
                          contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
-                                <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
+                                <div class="pl-4">
+                                  <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
+                                  <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
+                                </div>
                             </div>`;
                     } else {
                          contentHTML = `
@@ -1218,7 +1223,7 @@
         function renderAdminBookingList() {
             adminBookingList.innerHTML = '';
             if (!isAdminLoggedIn || allBookingsData.length === 0) {
-                adminBookingList.innerHTML = '<tr><td colspan="7" class="p-3 text-center text-gray-500">ไม่มีข้อมูลคิวงาน</td></tr>';
+                adminBookingList.innerHTML = '<tr><td colspan="8" class="p-3 text-center text-gray-500">ไม่มีข้อมูลคิวงาน</td></tr>';
                 return;
             }
             
@@ -1227,11 +1232,13 @@
             sortedBookingsForAdmin.forEach(booking => {
                 const tr = document.createElement('tr');
                 tr.className = 'border-b border-gray-200 hover:bg-gray-50';
+                const remaining = booking.paymentStatus === 'ชำระครบแล้ว' ? 0 : (parseFloat(booking.price) || 0) - (parseFloat(booking.deposit) || 0);
                 tr.innerHTML = `
                     <td class="p-3">${booking.typeOfWork || 'N/A'}</td>
                     <td class="p-3">${booking.clientName || 'N/A'}</td>
                     <td class="p-3">${formatShortDate(booking.startDateTime)}</td>
                     <td class="p-3">${booking.price ? booking.price.toLocaleString() : '0'}</td>
+                    <td class="p-3 font-bold text-red-600">${remaining.toLocaleString()}</td>
                     <td class="p-3"><span class="${getWorkStatusClass(booking.workStatus)}">${booking.workStatus || 'N/A'}</span></td>
                     <td class="p-3"><span class="${getPaymentStatusClass(booking.paymentStatus)}">${booking.paymentStatus || 'N/A'}</span></td>
                     <td class="p-3 space-x-1 whitespace-nowrap">
