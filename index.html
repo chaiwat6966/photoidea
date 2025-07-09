@@ -598,6 +598,26 @@
             </div>
         </div>
     </div>
+    
+    <div id="schoolDetailModal" class="modal">
+        <div class="modal-content-lg p-0">
+             <div class="modal-header-custom flex justify-between items-center p-4 rounded-t-lg">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-md mr-2 text-white">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m-15.132.001A8.959 8.959 0 013 12c0-.778.099-1.533.284-2.253m15.132 0A11.953 11.953 0 0012 10.5c2.998 0 5.74 1.1 7.843 2.918" />
+                    </svg>
+                    <h3 id="schoolModalTitle" class="text-xl font-semibold text-white"></h3>
+                </div>
+                <button id="closeSchoolModalBtn" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <div id="schoolModalSummary" class="mb-4 font-semibold text-gray-700"></div>
+                <div id="schoolModalBody" class="space-y-3 max-h-[60vh] overflow-y-auto">
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="tooltip"></div> 
     <script>
@@ -648,6 +668,9 @@
         const revenueJobTypeFilter = document.getElementById('revenueJobTypeFilter');
         const applyRevenueFilterBtn = document.getElementById('applyRevenueFilterBtn');
         const filteredRevenueResults = document.getElementById('filteredRevenueResults');
+        
+        const schoolDetailModal = document.getElementById('schoolDetailModal');
+        const closeSchoolModalBtn = document.getElementById('closeSchoolModalBtn');
 
         const calendarView = document.getElementById('calendarView');
         const calendarMonthYear = document.getElementById('calendarMonthYear');
@@ -1050,19 +1073,17 @@
                         contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <div class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg><span class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis">${locationText}</span></div>
-                                <div class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg><span class="text-[8px] text-gray-600">${time}</span></div>
-                                <div class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg><span class="text-[9px] text-gray-600">${booking.numPeople || 0}</span></div>
+                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
+                                <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
+                                <p class="text-[9px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>${booking.numPeople || 0}</p>
                             </div>`;
                     } else if (type.includes('งานบวช') || type.includes('wedding') || type.includes('รับปริญญา')) {
                          const locationText = (booking.location || '').replace(/รร\./g, '').trim();
                          contentHTML = `
                             <div class="text-[9px] leading-tight">
                                 <div class="flex items-center font-semibold">${iconHTML.replace('icon-sm', 'w-3 h-3 mr-1')}<span class="truncate">${booking.clientName || ''}</span></div>
-                                <div class="pl-4">
-                                  <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
-                                  <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
-                                </div>
+                                <p class="text-[8px] text-gray-600 whitespace-nowrap overflow-hidden text-ellipsis flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 20l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" /></svg>${locationText}</p>
+                                <p class="text-[8px] text-gray-600 flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V7z" clip-rule="evenodd" /></svg>${time}</p>
                             </div>`;
                     } else {
                          contentHTML = `
@@ -1439,9 +1460,11 @@
                 <p><span class="status-green">ส่งงานแล้ว:</span> ${overallDone}</p>
             `;
 
-            renderRevenuePieChart(data);
-            renderStudentBySchoolDonutChart(data);
-            renderStudentBySchoolBarChart(data);
+            if (revenuePieChartContainer && studentDonutChartContainer && studentBarChartContainer) {
+                renderRevenuePieChart(data);
+                renderStudentBySchoolDonutChart(data);
+                renderStudentBySchoolBarChart(data);
+            }
         }
 
         summaryRevenueClickable.addEventListener('click', () => {
@@ -1460,6 +1483,16 @@
                 revenueDetailModal.classList.remove('active');
             }
         });
+        
+        closeSchoolModalBtn.addEventListener('click', () => {
+            schoolDetailModal.classList.remove('active');
+        });
+        schoolDetailModal.addEventListener('click', (event) => {
+            if (event.target === schoolDetailModal) {
+                schoolDetailModal.classList.remove('active');
+            }
+        });
+
 
         function populateRevenueFilterDropdowns() {
             if (!allBookingsData || allBookingsData.length === 0) return;
@@ -1719,6 +1752,44 @@
             }
         }
 
+        function showSchoolBookingsModal(schoolName) {
+            const schoolModal = document.getElementById('schoolDetailModal');
+            const schoolModalTitle = document.getElementById('schoolModalTitle');
+            const schoolModalBody = document.getElementById('schoolModalBody');
+            const schoolModalSummary = document.getElementById('schoolModalSummary');
+
+            const schoolBookings = allBookingsData.filter(b => 
+                b.location && b.location.replace(/รร\./g, '').trim() === schoolName && 
+                b.typeOfWork === "โปรไฟล์นักเรียน | portfolio"
+            );
+
+            const sortedBookings = sortBookings(schoolBookings, 'bookingDateDesc');
+            const totalRevenue = sortedBookings.reduce((sum, b) => sum + (parseFloat(b.price) || 0), 0);
+            
+            schoolModalTitle.textContent = `รายการคิวงาน: ${schoolName}`;
+            schoolModalSummary.innerHTML = `สรุปจำนวนคิวงานทั้งหมด: ${sortedBookings.length} คิว <br> สรุปรายได้ทั้งหมด: <span class="text-green-600 font-bold">${totalRevenue.toLocaleString()}</span> บาท`;
+            
+            schoolModalBody.innerHTML = '';
+            if (sortedBookings.length === 0) {
+                schoolModalBody.innerHTML = '<p class="text-gray-500">ไม่พบข้อมูลคิวงานสำหรับโรงเรียนนี้</p>';
+            } else {
+                sortedBookings.forEach(booking => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'p-3 border rounded-lg bg-gray-50';
+                    itemDiv.innerHTML = `
+                        <p><strong>ลูกค้า:</strong> ${booking.clientName || 'N/A'}</p>
+                        <p><strong>วันที่จอง:</strong> ${formatDate(booking.bookingDateSystem)}</p>
+                        <p><strong>วันที่ถ่าย:</strong> ${formatDate(booking.startDateTime)}</p>
+                        <p><strong>ราคา:</strong> ${booking.price ? booking.price.toLocaleString() : '0'} บาท</p>
+                        <p><strong>สถานะงาน:</strong> <span class="${getWorkStatusClass(booking.workStatus)}">${booking.workStatus || 'N/A'}</span></p>
+                    `;
+                    schoolModalBody.appendChild(itemDiv);
+                });
+            }
+
+            schoolModal.classList.add('active');
+        }
+
         function renderStudentBySchoolBarChart(data) {
             d3.select("#studentBarChartContainer svg").remove();
             if (!data || data.length === 0) {
@@ -1794,7 +1865,11 @@
                 .attr("height", y.bandwidth())
                 .attr("fill", (d,i) => color(i))
                 .attr("rx", 4) 
-                .attr("ry", 4) 
+                .attr("ry", 4)
+                .style("cursor", "pointer")
+                .on("click", function(event, d) {
+                    showSchoolBookingsModal(d.school);
+                })
                 .on("mouseover", function(event, d) {
                     tooltip.transition().duration(200).style("opacity", .9);
                     tooltip.html(`${d.school}<br/>จำนวน: ${d.count} คน`)
